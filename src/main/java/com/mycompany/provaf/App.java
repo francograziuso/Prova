@@ -20,6 +20,8 @@ public class App extends Application {
         scene = new Scene(loadFXML("primary"), 640, 480);
         stage.setScene(scene);
         System.out.println("ACCIRT");
+        System.out.println("ACCIRT doi vot");
+        System.out.println("ACCIRT tre vot");
         stage.show();
     }
 
