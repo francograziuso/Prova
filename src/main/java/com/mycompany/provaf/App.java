@@ -22,6 +22,7 @@ public class App extends Application {
         System.out.println("ACCIRT");
         System.out.println("ACCIRT doi vot");
         System.out.println("ACCIRT tre vot");
+        System.out.println("ACCIRT Cinque vot");
         stage.show();
     }
 
