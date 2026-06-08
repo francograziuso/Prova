@@ -1,5 +1,5 @@
 // Presentation layer: stylesheet React Native dell'app.
-import { StyleSheet } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
     gameplayInstructionBox: {
