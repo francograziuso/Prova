@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "TrashDash",
+    "slug": "trashdash",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/trashdash_icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/trashdash_icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#03111E"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.trashdash.demo",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/trashdash_icon.png",
+        "backgroundColor": "#03111E"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.trashdash.demo",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "TrashDash usa la posizione solo per caricare le regole locali di raccolta differenziata."
+      }
+    },
+    "extra": {
+      "apiBaseUrlHint": "Configura EXPO_PUBLIC_API_BASE_URL nel file .env"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "TrashDash usa la posizione solo per caricare le regole locali di raccolta differenziata."
+        }
+      ],
+      "expo-audio"
+    ]
+  }
+}

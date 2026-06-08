@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Difficulty {
+  Facile
+  Medio
+  Difficile
+}
+
+enum GameMode {
+  SINGLE
+  BATTLE
+}
+
+enum GameStatus {
+  WIN
+  LOSE
+  ABANDONED
+}
+
+enum LobbyStatus {
+  WAITING
+  READY
+  IN_PROGRESS
+  FINISHED
+  EXPIRED
+}
+
+model User {
+  id           Int      @id @default(autoincrement()) @map("id_utente")
+  username     String   @unique @db.VarChar(80)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  coins        Int      @default(0) @map("valuta_tot")
+  totalScore   Int      @default(0) @map("punteggio_totale")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  settings      Setting?
+  games         Game[]
+  purchases     Purchase[]
+  hostedLobbies Lobby[]    @relation("LobbyHost")
+  joinedLobbies Lobby[]    @relation("LobbyGuest")
+
+  @@map("utenti")
+}
+
+model Setting {
+  userId             Int     @id @map("id_utente")
+  music              Boolean @default(true) @map("musica")
+  sfx                Boolean @default(true)
+  localization       Boolean @default(false) @map("localizzazione")
+  locationPromptSeen Boolean @default(false) @map("localizzazione_prompt_visto")
+  language           String  @default("IT") @map("lingua") @db.VarChar(5)
+  equippedItemId     String  @default("tree_green") @map("item_equipaggiato")
+
+  user         User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  equippedItem Item? @relation(fields: [equippedItemId], references: [id])
+
+  @@map("impostazioni")
+}
+
+model Item {
+  id          String @id @map("id_item") @db.VarChar(80)
+  name        String @map("nome") @db.VarChar(120)
+  type        String @map("tipo") @db.VarChar(60)
+  cost        Int    @map("costo")
+  iconHealthy String @default("🌳") @map("icona_ok") @db.VarChar(20)
+  iconDead    String @default("🪾") @map("icona_ko") @db.VarChar(20)
+
+  purchases Purchase[]
+  settings  Setting[]
+
+  @@map("item")
+}
+
+model Purchase {
+  userId      Int      @map("id_utente")
+  itemId      String   @map("id_item") @db.VarChar(80)
+  purchasedAt DateTime @default(now()) @map("data_acquisto")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([userId, itemId])
+  @@map("acquisti")
+}
+
+model Game {
+  id              Int        @id @default(autoincrement()) @map("id_partita")
+  userId          Int?       @map("id_utente")
+  mode            GameMode   @default(SINGLE) @map("modalita")
+  difficulty      Difficulty @map("difficolta")
+  score           Int        @default(0) @map("punteggio_partita")
+  status          GameStatus @map("stato")
+  livesRemaining  Int?       @map("vite_rimaste")
+  durationSeconds Int?       @map("durata_secondi")
+  errors          Json       @default("[]") @map("errori_report")
+  coinsEarned     Int        @default(0) @map("monete_ottenute")
+  region          String?    @map("regione") @db.VarChar(80)
+  capitalCity     String?    @map("capoluogo") @db.VarChar(80)
+  createdAt       DateTime   @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([score])
+  @@map("partite")
+}
+
+model Lobby {
+  id         Int         @id @default(autoincrement()) @map("id_lobby")
+  code       String      @unique @map("codice_lobby") @db.VarChar(16)
+  hostId     Int         @map("id_host")
+  guestId    Int?        @map("id_guest")
+  difficulty Difficulty  @default(Medio) @map("difficolta")
+  status     LobbyStatus @default(WAITING) @map("stato")
+  hostScore  Int?        @map("punteggio_host")
+  guestScore Int?        @map("punteggio_guest")
+  winnerId   Int?        @map("id_vincitore")
+  expiresAt  DateTime    @map("scadenza")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  host  User  @relation("LobbyHost", fields: [hostId], references: [id], onDelete: Cascade)
+  guest User? @relation("LobbyGuest", fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("lobby")
+}
+
+model RuleSet {
+  id          Int     @id @default(autoincrement()) @map("id_regola")
+  region      String  @map("regione") @db.VarChar(80)
+  capitalCity String  @map("capoluogo") @db.VarChar(80)
+  isDefault   Boolean @default(false) @map("default_uni")
+
+  wasteTypes WasteType[]
+
+  @@unique([region, capitalCity])
+  @@map("regole")
+}
+
+model WasteType {
+  id         Int     @id @default(autoincrement()) @map("id_tipologia")
+  ruleSetId  Int     @map("id_regola")
+  code       String  @map("codice") @db.VarChar(40)
+  label      String  @map("nome") @db.VarChar(80)
+  color      String  @map("colore") @db.VarChar(16)
+  textColor  String  @default("#FFFFFF") @map("colore_testo") @db.VarChar(16)
+  localColor String? @map("colore_locale") @db.VarChar(160)
+  note       String? @map("note_verifica") @db.Text
+  sourceUrl  String? @map("fonte_principale") @db.Text
+
+  ruleSet RuleSet     @relation(fields: [ruleSetId], references: [id], onDelete: Cascade)
+  wastes  WasteItem[]
+
+  @@unique([ruleSetId, code])
+  @@map("tipologie_rifiuto")
+}
+
+model WasteItem {
+  id          Int        @id @default(autoincrement()) @map("id_rifiuto")
+  typeId      Int        @map("id_tipologia")
+  name        String     @map("nome") @db.VarChar(120)
+  icon        String     @map("icona") @db.VarChar(20)
+  description String     @map("descrizione") @db.Text
+  difficulty  Difficulty @default(Facile) @map("difficolta")
+
+  type WasteType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@unique([typeId, name])
+  @@index([difficulty])
+  @@map("rifiuti")
+}

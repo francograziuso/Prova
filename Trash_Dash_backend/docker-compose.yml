@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: trashdash-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: trashdash
+      POSTGRES_PASSWORD: trashdash
+      POSTGRES_DB: trashdash
+    ports:
+      - "5434:5432"
+    volumes:
+      - trashdash_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trashdash -d trashdash"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  trashdash_pgdata:
