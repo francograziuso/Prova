@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
+import { DomainError } from "../../../domain/errors/DomainError";
 import { HttpError } from "../../../utils/http";
 
 export function notFound(req: Request, _res: Response, next: NextFunction) {
@@ -12,6 +13,10 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
 
   if (err instanceof HttpError) {
+    return res.status(err.status).json({ message: err.message, details: err.details });
+  }
+
+  if (err instanceof DomainError) {
     return res.status(err.status).json({ message: err.message, details: err.details });
   }
 

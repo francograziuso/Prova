@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
+import { container } from "../../../main/container";
 import { requireAuth } from "../middleware/auth";
-import { prisma } from "../../../infrastructure/prisma/client";
-import { HttpError } from "../../../utils/http";
 
 export const meRouter = Router();
 
@@ -15,26 +14,9 @@ const settingsSchema = z.object({
   equippedItemId: z.string().optional()
 });
 
-function normalizeUser(user: any) {
-  return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    coins: user.coins,
-    totalScore: user.totalScore,
-    settings: user.settings,
-    purchases: user.purchases ?? []
-  };
-}
-
 meRouter.get("/", requireAuth, async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user!.id },
-      include: { settings: true, purchases: true }
-    });
-    if (!user) throw new HttpError(404, "Utente non trovato");
-    res.json({ user: normalizeUser(user) });
+    res.json(await container.users.getProfile(req.user!.id));
   } catch (error) {
     next(error);
   }
@@ -43,15 +25,7 @@ meRouter.get("/", requireAuth, async (req, res, next) => {
 meRouter.put("/settings", requireAuth, async (req, res, next) => {
   try {
     const input = settingsSchema.parse(req.body);
-    const language = input.language ? (input.language === "English" ? "EN" : input.language === "Italiano" ? "IT" : input.language) : undefined;
-
-    const settings = await prisma.setting.upsert({
-      where: { userId: req.user!.id },
-      update: { ...input, language },
-      create: { userId: req.user!.id, ...input, language }
-    });
-
-    res.json({ settings });
+    res.json(await container.users.updateSettings(req.user!.id, input));
   } catch (error) {
     next(error);
   }

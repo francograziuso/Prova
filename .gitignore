@@ -35,6 +35,8 @@ secrets*.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.codex-logs/
+**/.codex-logs/
 
 # OS / editor
 .DS_Store

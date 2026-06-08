@@ -1,8 +1,8 @@
 # Architettura Onion TrashDash
 
-La ristrutturazione del frontend segue la Clean/Onion Architecture descritta nelle slide 17-20: gli import devono puntare verso il centro e le regole di business non devono conoscere React Native, Expo, storage o rete.
+La ristrutturazione segue la Clean/Onion Architecture descritta nelle slide 17-20: gli import devono puntare verso il centro e le regole di business non devono conoscere framework, storage o rete.
 
-## Layer
+## Frontend
 
 ```text
 Trash_Dash_frontend/src/
@@ -44,3 +44,45 @@ Trash_Dash_frontend/src/
 - Strategy: `gameRules.js` centralizza regole di difficolta, ricompense e generazione casuale degli oggetti.
 - Use Case: `createGameSession.js` prepara una nuova partita orchestrando regole domain.
 - ViewModel leggero: `App.js` mantiene lo stato UI tramite hook, ma delega dati e regole ai layer interni.
+
+## Backend
+
+```text
+Trash_Dash_backend/src/
+|-- domain/
+|   |-- entities/
+|   |-- errors/
+|   `-- repositories/
+|-- application/
+|   |-- ports/
+|   `-- use-cases/
+|       |-- auth/
+|       |-- catalog/
+|       |-- games/
+|       |-- geolocation/
+|       |-- leaderboard/
+|       |-- lobbies/
+|       |-- shop/
+|       `-- users/
+|-- infrastructure/
+|   |-- auth/
+|   |-- geolocation/
+|   |-- prisma/
+|   |   |-- mappers/
+|   |   `-- repositories/
+|   `-- security/
+|-- main/
+|   `-- container.ts
+`-- presentation/
+    `-- http/
+        |-- middleware/
+        `-- routes/
+```
+
+### Regole Backend
+
+- `domain`: contiene tipi, errori di dominio e interfacce repository. Non importa Express, Prisma, JWT, bcrypt o fetch.
+- `application`: contiene use case e porte. Orquestra la logica senza query Prisma dirette.
+- `infrastructure`: implementa repository e adapter tecnologici con Prisma, JWT, bcrypt e BigDataCloud.
+- `presentation`: contiene route Express sottili. Le route validano input con Zod, chiamano `container.*` e restituiscono la response.
+- `main/container.ts`: compone use case e implementazioni concrete.

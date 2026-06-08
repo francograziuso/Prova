@@ -1,6 +1,6 @@
 # TrashDash Backend
 
-Backend REST + WebSocket per TrashDash, costruito con lo stesso approccio del progetto `evnt-backend`: Express, TypeScript, Prisma, PostgreSQL, JWT, validazione Zod e separazione tra routes, middleware, utils e layer Prisma.
+Backend REST + WebSocket per TrashDash in Onion/Clean Architecture: Express e Zod stanno nel layer `presentation`, i casi d'uso stanno in `application`, i contratti in `domain` e Prisma/JWT/bcrypt/geolocation nel layer `infrastructure`.
 
 ## Funzioni coperte
 
@@ -20,14 +20,35 @@ cd Trash_Dash_backend
 cp .env.example .env
 npm install
 npm run db:up
-npm run db:setup
+npm run prisma:generate
+npm run prisma:push
+npm run seed
+npm run test:usecases
 npm run dev
+```
+
+Database Docker standard del progetto:
+
+```text
+PostgreSQL: localhost:5434
+database: trashdash
+utente: trashdash
+password: trashdash
+DATABASE_URL=postgresql://trashdash:trashdash@localhost:5434/trashdash?schema=public
 ```
 
 Health check:
 
 ```bash
 curl http://localhost:4000/api/health
+```
+
+Controlli backend veloci:
+
+```bash
+npm run typecheck
+npm run build
+npm run test:usecases
 ```
 
 Account admin seedato:

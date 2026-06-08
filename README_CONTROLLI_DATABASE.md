@@ -26,7 +26,9 @@ Se Docker e disponibile:
 ```bash
 cd Trash_Dash_backend
 npm run db:up
-npm run db:setup
+npm run prisma:generate
+npm run prisma:push
+npm run seed
 ```
 
 Se Docker non e disponibile ma hai PostgreSQL locale:

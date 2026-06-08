@@ -121,15 +121,15 @@ try {
   Write-Step "Installazione dipendenze backend"
   npm install
 
-  Write-Step "Generazione Prisma"
-  npm run prisma:generate
-
   Write-Step "Avvio PostgreSQL Docker"
   docker compose up -d
   if (-not (Wait-Port -Port 5434 -TimeoutSeconds 120)) {
     docker compose ps
     throw "PostgreSQL non risponde sulla porta 5434."
   }
+
+  Write-Step "Generazione Prisma"
+  npm run prisma:generate
 
   Write-Step "Setup database"
   npm run prisma:push
