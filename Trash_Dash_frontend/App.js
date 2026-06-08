@@ -450,7 +450,7 @@ const HARD_WASTES = expandWastePool("Difficile", HARD_WASTES_BASE);
     locationStatusLabel: "Regole",
     locationModeLabel: "Scelta",
     locationModeAlways: "Sempre",
-    locationModeOnce: "Solo questa volta",
+    locationModeOnce: "Attiva",
     locationModeNever: "Mai",
     locationModeUnset: "Non scelta",
     locationStandardStatus: "Standard nazionale: UNI 11686",
@@ -600,7 +600,7 @@ const HARD_WASTES = expandWastePool("Difficile", HARD_WASTES_BASE);
     locationStatusLabel: "Rules",
     locationModeLabel: "Choice",
     locationModeAlways: "Always",
-    locationModeOnce: "Only this time",
+    locationModeOnce: "Enabled",
     locationModeNever: "Never",
     locationModeUnset: "Not chosen",
     locationStandardStatus: "Standard nazionale: UNI 11686",
@@ -1991,7 +1991,8 @@ const MINI_GAME_SESSION_RECORD = {
 };
  
 function PlantRunner({ playCrashSfx, text }) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const stageHeight = Math.min(326, Math.max(286, height * 0.36));
  
   const jumpAnim = useRef(new Animated.Value(0)).current;
   const stepAnim = useRef(new Animated.Value(0)).current;
@@ -2423,7 +2424,7 @@ function PlantRunner({ playCrashSfx, text }) {
       pressRetentionOffset={{ top: 80, bottom: 80, left: 80, right: 80 }}
       onPressIn={handleDragonPressIn}
       onPressOut={handleDragonPressOut}
-      style={styles.plantRunnerStage}
+      style={[styles.plantRunnerStage, { height: stageHeight }]}
     >
       <View pointerEvents="none" style={styles.plantRunnerGroundLine} />
  
@@ -3741,6 +3742,7 @@ const currentWaste = currentGameWastes[wasteIndex];
 const text = TRANSLATIONS[language] || TRANSLATIONS.Italiano;
 
 const normalizeLocationConsentMode = (value) => {
+  if (value === LOCATION_CONSENT.once) return LOCATION_CONSENT.always;
   if (Object.values(LOCATION_CONSENT).includes(value)) return value;
   return LOCATION_CONSENT.unset;
 };
@@ -3794,8 +3796,6 @@ const getLocationModeLabel = () => {
   switch (locationConsentMode) {
     case LOCATION_CONSENT.always:
       return text.locationModeAlways;
-    case LOCATION_CONSENT.once:
-      return text.locationModeOnce;
     case LOCATION_CONSENT.never:
       return text.locationModeNever;
     default:
@@ -4329,12 +4329,7 @@ const persistLocationPromptDecision = async (enabled) => {
 };
 
 const handleLocationConsentChoice = async (mode) => {
-  const wantsLocation =
-    mode === true ||
-    mode === "always" ||
-    mode === "once" ||
-    mode === LOCATION_CONSENT.always ||
-    mode === LOCATION_CONSENT.once;
+  const wantsLocation = mode === true || mode === "always" || mode === LOCATION_CONSENT.always;
 
   setShowLocationPrompt(false);
   setLocationPromptSeen(true);
@@ -4360,10 +4355,10 @@ const handleLocalizationChange = async (value) => {
   }
 
   await writeLocationConsent(nextConsentMode).catch(() => {});
-  await persistLocationPromptDecision(value);
 
   if (!value) {
     setLocalization(false);
+    await persistLocationPromptDecision(false);
     await loadNationalLocationRules("UNI 11686").catch((error) =>
       console.log("Ripristino regole UNI non riuscito:", error.message)
     );
@@ -4374,6 +4369,8 @@ const handleLocalizationChange = async (value) => {
   setLocationStatus("Localizzazione attiva: verifico permesso...");
 
   const applied = await tryApplyDeviceLocationRules({ requestPermission: true });
+  await persistLocationPromptDecision(applied);
+
   if (!applied) {
     setLocalization(false);
     await loadNationalLocationRules("UNI 11686").catch((error) =>
@@ -5960,7 +5957,45 @@ function VisualFeedback({ isVictory, isTreeDead }) {
     </View>
   );
 }
- function ResultScreen() {
+function EducationalReportPanel({ title, intro, errors = [] }) {
+  return (
+    <View style={styles.educationalReportBox}>
+      <Text allowFontScaling={false} style={styles.educationalHeadline}>
+        {title}
+      </Text>
+
+      <ScrollView
+        style={styles.educationalReportScrollArea}
+        contentContainerStyle={styles.educationalReportScrollContent}
+        nestedScrollEnabled
+        showsVerticalScrollIndicator
+        overScrollMode="always"
+      >
+        {intro ? (
+          <Text allowFontScaling={false} style={styles.cleanReportText}>
+            {intro}
+          </Text>
+        ) : null}
+
+        {errors.length === 0 ? (
+          <Text allowFontScaling={false} style={styles.cleanReportText}>
+            {text.perfectReport}
+          </Text>
+        ) : (
+          errors.map((error, idx) => (
+            <View key={`${error.name}-${idx}`} style={styles.errorReportItemRow}>
+              <Text allowFontScaling={false} style={styles.errorReportTextBullet}>
+                • <Text allowFontScaling={false} style={styles.boldBlue}>{error.name}</Text>: {error.desc}
+              </Text>
+            </View>
+          ))
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+function ResultScreen() {
   const isVictory = gameResult === "VITTORIA";
   const isTreeDead = gameErrors.length >= 2 || !isVictory;
  
@@ -5992,25 +6027,7 @@ function VisualFeedback({ isVictory, isTreeDead }) {
           <VisualFeedback isVictory={isVictory} isTreeDead={isTreeDead} />
         </View>
  
-        <View style={styles.educationalReportBox}>
-          <Text allowFontScaling={false} style={styles.educationalHeadline}>
-            {text.educationalReport}
-          </Text>
- 
-          {gameErrors.length === 0 ? (
-            <Text allowFontScaling={false} style={styles.cleanReportText}>
-              {text.perfectReport}
-            </Text>
-          ) : (
-            gameErrors.map((error, idx) => (
-              <View key={idx} style={styles.errorReportItemRow}>
-                <Text allowFontScaling={false} style={styles.errorReportTextBullet}>
-                  • <Text allowFontScaling={false} style={styles.boldBlue}>{error.name}</Text>: {error.desc}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
+        <EducationalReportPanel title={text.educationalReport} errors={gameErrors} />
       </ScrollView>
     </ScreenShell>
   );
@@ -6381,6 +6398,12 @@ function ShopScreen() {
         <GoBackButton onPress={() => setScreen("menu")} />
       </View>
  
+      <ScrollView
+        contentContainerStyle={styles.battleEndScrollContent}
+        showsVerticalScrollIndicator
+        nestedScrollEnabled
+        overScrollMode="always"
+      >
       <View style={styles.centralPanel}>
         <Text allowFontScaling={false} style={styles.panelTitleText}>
           {text.battleEnd}
@@ -6426,30 +6449,9 @@ function ShopScreen() {
           </View>
         </View>
  
-        <View style={styles.educationalReportBox}>
-          <Text allowFontScaling={false} style={styles.educationalHeadline}>
-            {text.battleReport}
-          </Text>
- 
-          <Text allowFontScaling={false} style={styles.cleanReportText}>
-            {text.battleReportText}
-          </Text>
-
-          {gameErrors.length === 0 ? (
-            <Text allowFontScaling={false} style={styles.cleanReportText}>
-              {text.perfectReport}
-            </Text>
-          ) : (
-            gameErrors.map((error, idx) => (
-              <View key={idx} style={styles.errorReportItemRow}>
-                <Text allowFontScaling={false} style={styles.errorReportTextBullet}>
-                  • <Text allowFontScaling={false} style={styles.boldBlue}>{error.name}</Text>: {error.desc}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
+        <EducationalReportPanel title={text.battleReport} intro={text.battleReportText} errors={gameErrors} />
       </View>
+      </ScrollView>
     </ScreenShell>
   );
 }
@@ -11579,6 +11581,69 @@ hugeMenuLogo: {
     flex: 1,
     minHeight: 42,
     marginVertical: 0,
+  },
+
+  plantRunnerStage: {
+    marginHorizontal: 20,
+    marginTop: 18,
+    marginBottom: 24,
+    overflow: "hidden",
+    justifyContent: "flex-end",
+    position: "relative",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "rgba(34, 211, 238, 0.30)",
+    backgroundColor: "rgba(3, 20, 34, 0.38)",
+  },
+
+  miniRunnerDragonTouchArea: {
+    position: "absolute",
+    left: 2,
+    bottom: 18,
+    width: 138,
+    height: 118,
+    zIndex: 8,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+
+  plantRunnerCharacter: {
+    width: 125,
+    height: 106,
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+
+  runnerDinoBodyWrap: {
+    width: 110,
+    height: 103,
+    zIndex: 3,
+  },
+
+  educationalReportBox: {
+    width: "100%",
+    maxWidth: 460,
+    alignSelf: "center",
+    backgroundColor: "rgba(6, 32, 48, 0.84)",
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "rgba(34, 211, 238, 0.42)",
+    marginBottom: 24,
+  },
+
+  educationalReportScrollArea: {
+    maxHeight: 230,
+    width: "100%",
+  },
+
+  educationalReportScrollContent: {
+    paddingBottom: 8,
+  },
+
+  battleEndScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 34,
   },
 
   // FINE PATCH BOTTONI SCHERMATE PREMIUM
