@@ -47,6 +47,8 @@ yarn-error.log*
 prisma/dev.db
 .local_pg/
 **/.local_pg/
+docker-compose.override.yml
+**/docker-compose.override.yml
 
 # Mobile native generated folders if created later
 android/

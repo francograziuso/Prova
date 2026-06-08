@@ -24,17 +24,17 @@ Ogni oggetto e' di tipo `Estetico`. `Icona vittoria/base` viene mostrata quando 
 | `tree_eucalyptus_rainbow` | Eucalipto Arcobaleno | 410 | 🌈 | 🌫️ | Corteccia Arcobaleno | Colori Lavati |
 | `tree_bamboo_grove` | Bosco di Bambù | 430 | 🎍 | 🪾 | Canne Vivaci | Steli Spezzati |
 | `tree_ficus_city` | Ficus Urbano | 450 | 🏙️ | 🌁 | Verde Metropolitano | Smog sulle Foglie |
-| `flower_sunflower_patch` | Campo di Girasoli | 520 | 🌻🌻 | 🥀🌻 | Soli Fioriti | Petali Chinati |
-| `flower_lotus_pond` | Stagno di Loto | 600 | 🪷💧 | 🥀💧 | Acqua Serena | Loto Appassito |
-| `leaf_crystal_veil` | Velo di Foglie Cristallo | 680 | 🍃💎 | 🍂🪨 | Foglie Prismatiche | Cristalli Opachi |
-| `candy_tree` | Albero di Caramelle | 760 | 🍭🌳 | 🍬🪵 | Dolce Chioma | Zucchero Spento |
-| `mushroom_garden` | Giardino dei Funghi | 840 | 🍄🌿 | 🍄🍂 | Sottobosco Vivo | Spore Stanche |
-| `flower_nebula` | Fiore Nebulosa | 920 | 🌌🌸 | 🌑🥀 | Fioritura Stellare | Nebbia Spenta |
-| `coral_garden` | Giardino Corallino | 1000 | 🪸✨ | 🪸🌫️ | Corallo Luminoso | Barriera Pallida |
-| `crystal_bloom` | Fioritura di Cristallo | 1080 | 💎🌺 | 🪨🥀 | Gemme in Fiore | Petali di Pietra |
+| `flower_sunflower_patch` | Girasole Radioso | 160 | 🌻 | 🥀 | Sole Aperto | Petali Spenti |
+| `candy_tree` | Leccalecca Verde | 180 | 🍭 | 🍬 | Dolce Vivace | Zucchero Crepato |
+| `flower_lotus_pond` | Fiore di Loto | 240 | 🪷 | 🥀 | Loto Sereno | Loto Chiuso |
+| `mushroom_garden` | Fungo Smeraldo | 260 | 🍄 | 🍂 | Cappello Vivo | Spore Stanche |
+| `leaf_crystal_veil` | Foglia Cristallina | 300 | 🍃 | 🍂 | Nervature Lucenti | Foglia Opaca |
+| `flower_nebula` | Orchidea Lunare | 520 | 🌺 | 🥀 | Fioritura Lunare | Orchidea Spenta |
+| `coral_garden` | Corallo Regale | 760 | 🪸 | 🪨 | Ramo Corallino | Corallo Pallido |
+| `crystal_bloom` | Cristallo Prisma | 980 | 💎 | 🪨 | Taglio Prismatico | Scheggia Opaca |
 
 ## Regole economiche
 
 - `tree_green` e' sempre gratuito e acquistato di default.
 - Gli item da 50 a 450 monete sono progressivi e principalmente botanici.
-- Gli item da 520 a 1080 monete sono varianti speciali non necessariamente ad albero, con resa piu' rara/fantasy.
+- Gli item extra ora sono singoli elementi estetici: quelli semplici costano meno, mentre corallo e cristallo restano premium.

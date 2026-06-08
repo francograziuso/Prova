@@ -27,6 +27,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
   TextInput,
   StatusBar,
   useWindowDimensions,
@@ -34,6 +35,8 @@ import {
   AppState,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const RUNNER_DRAGON_IMAGE = require("./assets/trashdash_runner_dragon.png");
 
 // ============================================================================
 // COMPATIBILITÀ AUDIO EXPO SDK 54
@@ -145,7 +148,7 @@ const BINS = [
   { id: "rs", label: "RS", labelFull: "Rifiuti speciali", color: "#E30613", textColor: "#FFFFFF" },
 ];
  
-const EASY_WASTES = [
+const EASY_WASTES_BASE = [
   { name: "Giornale vecchio", icon: "📰", type: "carta", desc: "Il giornale va nella carta perché è materiale cellulosico riciclabile." },
   { name: "Bottiglia PET", icon: "🧴", type: "multi", desc: "La bottiglia in PET va nel multimateriale. Ricordati di schiacciarla!" },
   { name: "Buccia di banana", icon: "🍌", type: "umido", desc: "La buccia di banana va nell'umido perché è rifiuto organico biologico." },
@@ -167,7 +170,7 @@ const EASY_WASTES = [
   { name: "Fiori secchi", icon: "🥀", type: "umido", desc: "I fiori secchi e piccoli scarti vegetali vanno nell'umido." },
 ];
  
-const MEDIUM_WASTES = [
+const MEDIUM_WASTES_BASE = [
   { name: "Giornale vecchio", icon: "📰", type: "carta", desc: "Il giornale va nella carta perché è materiale cellulosico riciclabile." },
   { name: "Bottiglia PET", icon: "🧴", type: "multi", desc: "La bottiglia in PET va nel multimateriale. Ricordati di schiacciarla!" },
   { name: "Buccia di banana", icon: "🍌", type: "umido", desc: "La buccia di banana va nell'umido perché è rifiuto organico biologico." },
@@ -197,7 +200,7 @@ const MEDIUM_WASTES = [
   { name: "Carta carbone", icon: "📄⚫", type: "secco", desc: "La carta carbone o chimica non va nella carta e si conferisce nel secco." },
 ];
  
-const HARD_WASTES = [
+const HARD_WASTES_BASE = [
   { name: "Cartone uova pulito", icon: "🥚", type: "carta", desc: "Il cartone delle uova pulito va nella carta perché è un imballaggio in cellulosa riciclabile." },
   { name: "Busta pane pulita", icon: "🛍️🥖", type: "carta", desc: "La busta del pane pulita e in carta va conferita nella carta." },
   { name: "Foglio unto leggero", icon: "📄", type: "carta", desc: "Se il foglio è solo leggermente sporco e resta riciclabile, va nella carta; se molto sporco va nel secco." },
@@ -249,6 +252,67 @@ const HARD_WASTES = [
   { name: "Capsula caffè compostabile", icon: "☕", type: "umido", desc: "La capsula certificata compostabile può andare nell'umido se indicato sull'etichetta." },
   { name: "Posata compostabile", icon: "🍴", type: "umido", desc: "La posata certificata compostabile va nell'umido, non nella plastica." },
 ];
+
+const WASTE_EXPANSION_ITEMS = {
+  Facile: {
+    carta: [["Scatola pasta", "📦"], ["Scatola riso", "📦"], ["Scatola tè", "🍵📦"], ["Scatola biscotti", "🍪📦"], ["Busta lettere", "✉️"], ["Volantino pubblicitario", "📃"], ["Manuale istruzioni", "📘"], ["Calendario carta", "📅"], ["Cartolina semplice", "🏞️"], ["Sacchetto farina", "🛍️🌾"], ["Busta zucchero", "🛍️"], ["Cartoncino crackers", "📦"], ["Foglio appunti", "📝"], ["Disegno su carta", "🎨📄"], ["Scatola scarpe", "👟📦"]],
+    multi: [["Bottiglia latte plastica", "🥛🧴"], ["Flacone bagnoschiuma", "🧴"], ["Flacone detersivo", "🧴🫧"], ["Vaschetta gelato", "🍨"], ["Busta pasta plastica", "🛍️🍝"], ["Barattolo pelati", "🥫"], ["Lattina bibita", "🥫"], ["Coperchio metallo", "🔘"], ["Vaschetta affettati", "🍱"], ["Sacchetto surgelati", "❄️🛍️"], ["Retina patate", "🥔"], ["Confezione merenda plastica", "🍫🛍️"], ["Vasetto plastica dessert", "🥣"], ["Tappo flacone", "🔘"], ["Film imballaggio", "🎞️"]],
+    umido: [["Scorza limone", "🍋"], ["Bucce patata", "🥔"], ["Scarti carota", "🥕"], ["Gambo broccoli", "🥦"], ["Insalata appassita", "🥬"], ["Pane raffermo", "🥖"], ["Avanzo riso", "🍚"], ["Bucce cipolla", "🧅"], ["Gusci frutta secca", "🥜"], ["Residuo spremuta", "🍊"], ["Scarto zucchina", "🥒"], ["Piccoli fiori recisi", "🥀"], ["Foglie secche piccole", "🍂"], ["Bustina tè senza graffetta", "🍵"], ["Carta cucina sporca di cibo", "🧻"]],
+    vetro: [["Bottiglia birra", "🍺"], ["Bottiglia vino", "🍷"], ["Vasetto sugo", "🫙🍝"], ["Barattolo miele", "🍯🫙"], ["Vasetto sottaceti", "🫙🥒"], ["Bottiglia passata", "🍅🍾"], ["Bottiglia aceto", "🍾"], ["Boccetta spezie", "🫙🌿"], ["Vasetto omogeneizzato", "🫙👶"], ["Bottiglia succo vetro", "🧃🍾"], ["Barattolo conserve", "🫙"], ["Bottiglia olio vetro", "🫒🍾"], ["Vasetto crema nocciole", "🫙🍫"], ["Barattolo olive", "🫙🫒"], ["Boccetta aroma vetro", "🧪"]],
+    secco: [["Gomma da cancellare", "◻️"], ["Matita consumata", "✏️"], ["Nastro adesivo usato", "🎗️"], ["Cannuccia usata", "🥤"], ["Posata plastica sporca", "🍴"], ["Cerotto usato", "🩹"], ["Spugna cucina usata", "🧽"], ["Pettine rotto", "💇"], ["Giocattolo piccolo rotto", "🧸"], ["CD graffiato", "💿"], ["Polvere aspirapolvere", "🧹"], ["Sacchetto aspirapolvere", "🧹"], ["Pennarello scarico", "🖊️"], ["Carta plastificata", "📄✨"], ["Tovagliolo colorato", "🧻"]],
+    rs: [["Batteria bottone", "🔋"], ["Pila ministilo", "🔋"], ["Lampadina basso consumo", "💡"], ["Toner esaurito", "🖨️"], ["Cuffie rotte", "🎧"], ["Mouse rotto", "🖱️"], ["Cavo USB rotto", "🔌"], ["Power bank esausto", "🔋"], ["Spazzolino elettrico rotto", "🪥"], ["Termometro elettronico", "🌡️"], ["Sveglia elettronica rotta", "⏰"], ["Calcolatrice rotta", "🧮"], ["Lampada da scrivania rotta", "💡"], ["Batteria ricaricabile", "🔋"], ["Rasoio elettrico rotto", "🪒"]],
+  },
+  Medio: {
+    carta: [["Cartone pizza poco unto", "📦🍕"], ["Scatola surgelati cartone", "📦❄️"], ["Busta con finestrella", "✉️"], ["Catalogo pinzato", "📚"], ["Cartoncino medicine", "💊📦"], ["Scatola dentifricio", "🪥📦"], ["Carta regalo semplice", "🎁📄"], ["Vassoio pasticceria pulito", "🧁📦"], ["Coppetta gelato carta pulita", "🍨📄"], ["Etichetta carta rimossa", "🏷️"], ["Tovaglia carta pulita", "📄"], ["Busta pane con briciole", "🛍️🥖"], ["Scatola imballo piccola", "📦"]],
+    multi: [["Piatto plastica pulito", "🍽️"], ["Bicchiere plastica", "🥤"], ["Vaschetta polistirolo grande", "🍱"], ["Pluriball da pacco", "🫧"], ["Tanichetta detersivo", "🧴"], ["Foglio alluminio pulito", "🧻✨"], ["Blister vuoto medicine", "💊"], ["Confezione uova plastica", "🥚"], ["Vaschetta carne pulita", "🥩🍱"], ["Film termoretraibile", "🎞️"], ["Coperchio yogurt alluminio", "🥣🔘"], ["Busta mozzarella", "🧀🛍️"], ["Vaso vivaio plastica", "🪴"]],
+    umido: [["Tappo sughero naturale", "🟤"], ["Stecchino legno gelato", "🍦"], ["Bustina tisana compostabile", "🍵"], ["Tovagliolo bianco unto", "🧻"], ["Piatto compostabile certificato", "🍽️"], ["Sacchetto compostabile", "🛍️"], ["Capsula caffè compostabile", "☕"], ["Scarto pesce", "🐟"], ["Ossa piccole", "🍖"], ["Bucce cipolla", "🧅"], ["Scarti potatura piccoli", "🌿"], ["Carta assorbente cucina", "🧻"], ["Avanzo verdure cotte", "🥗"]],
+    vetro: [["Vasetto yogurt vetro", "🫙"], ["Bottiglia liquore", "🍾"], ["Boccetta medicinale vuota", "🧪"], ["Vasetto candela pulito", "🕯️"], ["Bottiglia sciroppo", "🍾"], ["Flacone essenza vetro", "⚗️"], ["Barattolino pesto", "🫙🌿"], ["Bottiglia salsa soia", "🍾"], ["Vasetto capperi", "🫙"], ["Boccetta contagocce vuota", "🧪"], ["Bottiglia bibita vetro", "🍾"], ["Flacone dopobarba vetro", "🧴"], ["Barattolo legumi vetro", "🫙"]],
+    secco: [["Carta carbone", "📄⚫"], ["Carta fotografica", "🖼️"], ["Carta vetrata", "📄🪨"], ["Tazza rotta", "☕"], ["Specchio piccolo rotto", "🪞"], ["Bicchiere cristallo", "🥂"], ["Pirofila pyrex", "🍲"], ["Lametta usa e getta", "🪒"], ["Lettiera minerale", "🐱"], ["Capsula caffè non compostabile", "☕"], ["Cialda caffè mista", "☕"], ["Straccio sporco", "🧽"], ["Radiografia vecchia", "🩻"]],
+    rs: [["Tastiera rotta", "⌨️"], ["Piccolo phon rotto", "💨"], ["Smalto con residui", "💅"], ["Solvente unghie residuo", "🧴"], ["Vernice avanzata", "🎨"], ["Colla solvente", "🧴"], ["Spray insetticida", "🧯"], ["Batteria trapano", "🔋"], ["Gioco elettronico rotto", "🎮"], ["Lampada LED rotta", "💡"], ["Inchiostro stampante", "🖨️"], ["Termometro mercurio", "🌡️"], ["Router guasto", "📡"]],
+  },
+  Difficile: {
+    carta: [["Carta kraft con nastro rimosso", "📦"], ["Carta da pacchi non plastificata", "📦"], ["Busta pane con finestra separata", "🛍️🥖"], ["Cartoncino freezer pulito", "📦❄️"], ["Carta accoppiata alluminio", "📄✨"], ["Carta termica parcheggio", "🧾"], ["Busta regalo laminata", "🎁"], ["Carta sporca vernice", "📄🎨"], ["Carta forno siliconata", "📄"], ["Depliant plastificato leggero", "📄"]],
+    multi: [["Tetra Pak risciacquato", "🥤"], ["Tubetto dentifricio vuoto", "🪥"], ["Busta caffè multistrato", "☕🛍️"], ["Confezione snack metallizzata", "🛍️"], ["Imballo polistirolo elettrodomestico", "📦"], ["Reggetta plastica imballo", "🎗️"], ["Grucce imballaggio plastica", "🧥"], ["Capsula caffè alluminio vuota", "☕"], ["Bomboletta deodorante vuota", "🧴"], ["Busta sottovuoto alimenti", "🛍️"]],
+    umido: [["Osso grande", "🍖"], ["Guscio cozza", "🦪"], ["Guscio vongola", "🦪"], ["Tovagliolo colorato unto", "🧻"], ["Sacchetto compostabile scaduto", "🛍️"], ["Filtro caffè carta", "☕"], ["Stuzzicadenti legno", "🪵"], ["Segatura non trattata", "🪵"], ["Bastoncino sushi legno", "🥢"], ["Cialda carta compostabile", "☕"]],
+    vetro: [["Fiala farmaco sciacquata", "🧪"], ["Boccetta profumo con spruzzino rimosso", "⚗️"], ["Vasetto cosmetico senza residui", "🫙"], ["Barattolo vetro con etichetta", "🫙"], ["Bottiglia vetro colorato", "🍾"], ["Bottiglia mignon", "🍾"], ["Barattolo vetro rotto imballaggio", "🧩"], ["Bottiglia profumatore ambiente", "⚗️"], ["Bottiglia salsa piccante", "🌶️🍾"], ["Barattolo spezie con tappo separato", "🫙"]],
+    secco: [["Cristallo rotto", "🥂"], ["Vetro borosilicato", "🍲"], ["Specchio grande rotto", "🪞"], ["Porcellana rotta", "☕"], ["Lampadina a incandescenza", "💡"], ["Vetro finestra piccolo", "🪟"], ["Coperchio silicone", "🔘"], ["Nastro VHS", "📼"], ["Ombrello rotto", "☂️"], ["Guarnizione gomma", "⚙️"]],
+    rs: [["Notebook rotto", "💻"], ["Tablet rotto", "📱"], ["Hard disk rotto", "💽"], ["Monitor rotto", "🖥️"], ["Stampante rotta", "🖨️"], ["Frullatore rotto", "🥤"], ["Ferro da stiro rotto", "👕"], ["Trapano guasto", "🛠️"], ["Olio motore esausto", "🛢️"], ["Batteria e-bike", "🔋"]],
+  },
+};
+
+const WASTE_EXPANSION_DESCRIPTIONS = {
+  carta: (name) => `${name}: va nella carta solo se è pulito, asciutto e non plastificato.`,
+  multi: (name) => `${name}: se è un imballaggio vuoto e pulito va nel multimateriale, secondo le regole locali.`,
+  umido: (name) => `${name}: va nell'umido se è organico o certificato compostabile e il servizio locale lo accetta.`,
+  vetro: (name) => `${name}: va nel vetro solo se è un imballaggio in vetro vuoto e non pericoloso.`,
+  secco: (name) => `${name}: non va nelle raccolte riciclabili principali e si conferisce nel secco o secondo regole locali.`,
+  rs: (name) => `${name}: va raccolto separatamente come rifiuto speciale o RAEE, non nei cassonetti ordinari.`,
+};
+
+const expandWastePool = (level, baseItems) => {
+  const seen = new Set(baseItems.map((item) => item.name));
+  const additions = [];
+  const groups = WASTE_EXPANSION_ITEMS[level] || {};
+
+  Object.entries(groups).forEach(([type, entries]) => {
+    entries.forEach(([name, icon]) => {
+      if (seen.has(name)) return;
+      seen.add(name);
+      additions.push({
+        name,
+        icon,
+        type,
+        desc: WASTE_EXPANSION_DESCRIPTIONS[type](name),
+      });
+    });
+  });
+
+  return [...baseItems, ...additions];
+};
+
+const EASY_WASTES = expandWastePool("Facile", EASY_WASTES_BASE);
+const MEDIUM_WASTES = expandWastePool("Medio", MEDIUM_WASTES_BASE);
+const HARD_WASTES = expandWastePool("Difficile", HARD_WASTES_BASE);
  
 // ============================================================================
 // DIZIONARIO DI LOCALIZZAZIONE (ITALIANO / ENGLISH)
@@ -844,9 +908,9 @@ const getShopItemMood = (item, language, dead = false) => {
 };
  
 const DIFFICULTY_SETTINGS = {
-  Facile: { time: 100, lives: 3, minObjects: 5, maxObjects: 7 },
-  Medio: { time: 80, lives: 3, minObjects: 7, maxObjects: 10 },
-  Difficile: { time: 65, lives: 3, minObjects: 7, maxObjects: 15 },
+  Facile: { time: 100, lives: 3, minObjects: 5, maxObjects: 8 },
+  Medio: { time: 55, lives: 3, minObjects: 8, maxObjects: 12 },
+  Difficile: { time: 42, lives: 3, minObjects: 10, maxObjects: 15 },
 };
 
 const BATTLE_DIFFICULTIES = ["Facile", "Medio", "Difficile"];
@@ -1029,14 +1093,14 @@ const EXTRA_TREE_ITEMS = [
   makeTreeSkin({ id: "tree_eucalyptus_rainbow", name: "Eucalipto Arcobaleno", cost: 410, type: "Estetico", iconHealthy: "🌈", iconDead: "🌫️", moodHealthy: "Corteccia Arcobaleno", moodDead: "Colori Lavati", bgHealthy: "rgba(168, 85, 247, 0.2)", bgDead: "#322844", borderColor: "#C084FC", leaf: "#22C55E", leaf2: "#A78BFA", accent: "#F472B6", trunk: "#A855F7", ground: "#4C1D95" }),
   makeTreeSkin({ id: "tree_bamboo_grove", name: "Bosco di Bambù", cost: 430, type: "Estetico", iconHealthy: "🎍", iconDead: "🪾", moodHealthy: "Canne Vivaci", moodDead: "Steli Spezzati", bgHealthy: "rgba(101, 163, 13, 0.22)", bgDead: "#26321F", borderColor: "#84CC16", leaf: "#65A30D", leaf2: "#D9F99D", accent: "#F7FEE7", trunk: "#84CC16", ground: "#3F6212", shape: "bamboo" }),
   makeTreeSkin({ id: "tree_ficus_city", name: "Ficus Urbano", cost: 450, type: "Estetico", iconHealthy: "🏙️", iconDead: "🌁", moodHealthy: "Verde Metropolitano", moodDead: "Smog sulle Foglie", bgHealthy: "rgba(45, 212, 191, 0.2)", bgDead: "#243239", borderColor: "#2DD4BF", leaf: "#0D9488", leaf2: "#5EEAD4", accent: "#F8FAFC", trunk: "#704B32", ground: "#134E4A" }),
-  { id: "flower_sunflower_patch", name: "Campo di Girasoli", cost: 520, type: "Estetico", iconHealthy: "🌻🌻", iconDead: "🥀🌻", moodHealthy: "Soli Fioriti", moodDead: "Petali Chinati", bgHealthy: "rgba(250, 204, 21, 0.22)", bgDead: "#3B2F18", borderColor: "#FACC15" },
-  { id: "flower_lotus_pond", name: "Stagno di Loto", cost: 600, type: "Estetico", iconHealthy: "🪷💧", iconDead: "🥀💧", moodHealthy: "Acqua Serena", moodDead: "Loto Appassito", bgHealthy: "rgba(45, 212, 191, 0.22)", bgDead: "#1E3440", borderColor: "#2DD4BF" },
-  { id: "leaf_crystal_veil", name: "Velo di Foglie Cristallo", cost: 680, type: "Estetico", iconHealthy: "🍃💎", iconDead: "🍂🪨", moodHealthy: "Foglie Prismatiche", moodDead: "Cristalli Opachi", bgHealthy: "rgba(125, 211, 252, 0.22)", bgDead: "#263241", borderColor: "#7DD3FC" },
-  { id: "candy_tree", name: "Albero di Caramelle", cost: 760, type: "Estetico", iconHealthy: "🍭🌳", iconDead: "🍬🪵", moodHealthy: "Dolce Chioma", moodDead: "Zucchero Spento", bgHealthy: "rgba(251, 113, 133, 0.22)", bgDead: "#3B2431", borderColor: "#FB7185" },
-  { id: "mushroom_garden", name: "Giardino dei Funghi", cost: 840, type: "Estetico", iconHealthy: "🍄🌿", iconDead: "🍄🍂", moodHealthy: "Sottobosco Vivo", moodDead: "Spore Stanche", bgHealthy: "rgba(34, 197, 94, 0.2)", bgDead: "#2D2A20", borderColor: "#86EFAC" },
-  { id: "flower_nebula", name: "Fiore Nebulosa", cost: 920, type: "Estetico", iconHealthy: "🌌🌸", iconDead: "🌑🥀", moodHealthy: "Fioritura Stellare", moodDead: "Nebbia Spenta", bgHealthy: "rgba(168, 85, 247, 0.22)", bgDead: "#27213A", borderColor: "#C084FC" },
-  { id: "coral_garden", name: "Giardino Corallino", cost: 1000, type: "Estetico", iconHealthy: "🪸✨", iconDead: "🪸🌫️", moodHealthy: "Corallo Luminoso", moodDead: "Barriera Pallida", bgHealthy: "rgba(244, 114, 182, 0.22)", bgDead: "#3A2731", borderColor: "#F472B6" },
-  { id: "crystal_bloom", name: "Fioritura di Cristallo", cost: 1080, type: "Estetico", iconHealthy: "💎🌺", iconDead: "🪨🥀", moodHealthy: "Gemme in Fiore", moodDead: "Petali di Pietra", bgHealthy: "rgba(14, 165, 233, 0.22)", bgDead: "#202C38", borderColor: "#38BDF8" },
+  { id: "flower_sunflower_patch", name: "Girasole Radioso", cost: 160, type: "Estetico", iconHealthy: "🌻", iconDead: "🥀", moodHealthy: "Sole Aperto", moodDead: "Petali Spenti", bgHealthy: "rgba(250, 204, 21, 0.22)", bgDead: "#3B2F18", borderColor: "#FACC15" },
+  { id: "candy_tree", name: "Leccalecca Verde", cost: 180, type: "Estetico", iconHealthy: "🍭", iconDead: "🍬", moodHealthy: "Dolce Vivace", moodDead: "Zucchero Crepato", bgHealthy: "rgba(251, 113, 133, 0.2)", bgDead: "#3B2431", borderColor: "#FB7185" },
+  { id: "flower_lotus_pond", name: "Fiore di Loto", cost: 240, type: "Estetico", iconHealthy: "🪷", iconDead: "🥀", moodHealthy: "Loto Sereno", moodDead: "Loto Chiuso", bgHealthy: "rgba(45, 212, 191, 0.2)", bgDead: "#1E3440", borderColor: "#2DD4BF" },
+  { id: "mushroom_garden", name: "Fungo Smeraldo", cost: 260, type: "Estetico", iconHealthy: "🍄", iconDead: "🍂", moodHealthy: "Cappello Vivo", moodDead: "Spore Stanche", bgHealthy: "rgba(34, 197, 94, 0.2)", bgDead: "#2D2A20", borderColor: "#86EFAC" },
+  { id: "leaf_crystal_veil", name: "Foglia Cristallina", cost: 300, type: "Estetico", iconHealthy: "🍃", iconDead: "🍂", moodHealthy: "Nervature Lucenti", moodDead: "Foglia Opaca", bgHealthy: "rgba(125, 211, 252, 0.2)", bgDead: "#263241", borderColor: "#7DD3FC" },
+  { id: "flower_nebula", name: "Orchidea Lunare", cost: 520, type: "Estetico", iconHealthy: "🌺", iconDead: "🥀", moodHealthy: "Fioritura Lunare", moodDead: "Orchidea Spenta", bgHealthy: "rgba(168, 85, 247, 0.2)", bgDead: "#27213A", borderColor: "#C084FC" },
+  { id: "coral_garden", name: "Corallo Regale", cost: 760, type: "Estetico", iconHealthy: "🪸", iconDead: "🪨", moodHealthy: "Ramo Corallino", moodDead: "Corallo Pallido", bgHealthy: "rgba(244, 114, 182, 0.2)", bgDead: "#3A2731", borderColor: "#F472B6" },
+  { id: "crystal_bloom", name: "Cristallo Prisma", cost: 980, type: "Estetico", iconHealthy: "💎", iconDead: "🪨", moodHealthy: "Taglio Prismatico", moodDead: "Scheggia Opaca", bgHealthy: "rgba(14, 165, 233, 0.22)", bgDead: "#202C38", borderColor: "#38BDF8" },
 ];
  
 const INITIAL_SHOP_ITEMS = [
@@ -1963,16 +2027,17 @@ function PlantRunner({ playCrashSfx, text }) {
   const miniObstacleIdRef = useRef(0);
   const miniStageWidthRef = useRef(width);
  
-  const DRAGON_LEFT = 24;
-  const DRAGON_WIDTH = 82;
-  const LONG_JUMP_Y = -132;
-  const JUMP_START_VELOCITY = -235;
-  const HOLD_MAX_SECONDS = 0.62;
-  const HOLD_GRAVITY = 420;
-  const RELEASE_GRAVITY = 840;
-  const HOLD_BOOST_ACCELERATION = -540;
-  const MAX_RISE_SPEED = -330;
-  const MAX_FALL_SPEED = 640;
+  const DRAGON_LEFT = 18;
+  const DRAGON_WIDTH = 96;
+  const LONG_JUMP_Y = -148;
+  const JUMP_START_VELOCITY = -242;
+  const HOLD_MAX_SECONDS = 0.72;
+  const HOLD_GRAVITY = 330;
+  const RELEASE_GRAVITY = 930;
+  const HOLD_BOOST_ACCELERATION = -620;
+  const MAX_RISE_SPEED = -390;
+  const MAX_FALL_SPEED = 610;
+  const SHORT_TAP_FALL_MULTIPLIER = 1.32;
   const GROUND_READY_Y = -10;
   const JUMP_BUFFER_MS = 280;
  
@@ -2148,7 +2213,11 @@ function PlantRunner({ playCrashSfx, text }) {
       currentVelocity += (HOLD_GRAVITY + HOLD_BOOST_ACCELERATION) * deltaSeconds;
       currentVelocity = Math.max(currentVelocity, MAX_RISE_SPEED);
     } else {
-      currentVelocity += RELEASE_GRAVITY * deltaSeconds;
+      const releaseGravity =
+        jumpHoldElapsedRef.current < 0.12
+          ? RELEASE_GRAVITY * SHORT_TAP_FALL_MULTIPLIER
+          : RELEASE_GRAVITY;
+      currentVelocity += releaseGravity * deltaSeconds;
     }
  
     currentVelocity = Math.min(currentVelocity, MAX_FALL_SPEED);
@@ -2210,8 +2279,8 @@ function PlantRunner({ playCrashSfx, text }) {
     const currentTime = Math.floor(miniElapsedRef.current);
     setMiniScore(currentTime);
  
-    const dragonLeft = DRAGON_LEFT + 16;
-    const dragonRight = DRAGON_LEFT + DRAGON_WIDTH - 12;
+    const dragonLeft = DRAGON_LEFT + 26;
+    const dragonRight = DRAGON_LEFT + DRAGON_WIDTH - 10;
  
     const hasCollision = movedObstacles.some((obstacle) => {
       const obstacleLeft = obstacle.x;
@@ -2441,7 +2510,11 @@ function PlantRunner({ playCrashSfx, text }) {
               },
             ]}
           >
-            <EcoDinoBodySvg width={94} height={68} />
+            <Image
+              source={RUNNER_DRAGON_IMAGE}
+              style={styles.runnerDragonImage}
+              resizeMode="contain"
+            />
           </Animated.View>
         </Animated.View>
       </View>
@@ -6092,7 +6165,7 @@ function ShopScreen() {
           {text.shop}
         </Text>
  
-        {shopItems.map((item) => {
+        {[...shopItems].sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)).map((item) => {
           const isEquipped = equippedTreeId === item.id;
           const canBuy = coins >= item.cost;
  
@@ -6527,26 +6600,31 @@ plantRunnerStage: {
  
 miniRunnerDragonTouchArea: {
   position: "absolute",
-  left: 10,
-  bottom: 24,
-  width: 124,
-  height: 94,
+  left: 2,
+  bottom: 18,
+  width: 138,
+  height: 118,
   zIndex: 8,
   justifyContent: "flex-end",
   alignItems: "center",
 },
  
 plantRunnerCharacter: {
-  width: 112,
-  height: 82,
+  width: 132,
+  height: 112,
   alignItems: "center",
   justifyContent: "flex-end",
 },
  
 runnerDinoBodyWrap: {
-  width: 94,
-  height: 68,
+  width: 116,
+  height: 108,
   zIndex: 3,
+},
+
+runnerDragonImage: {
+  width: "100%",
+  height: "100%",
 },
  
 plantRunnerGroundLine: {
@@ -6561,10 +6639,10 @@ plantRunnerGroundLine: {
  
 runnerGroundShadow: {
   position: "absolute",
-  left: 44,
-  bottom: 33,
-  width: 70,
-  height: 10,
+  left: 48,
+  bottom: 28,
+  width: 82,
+  height: 12,
   borderRadius: 999,
   backgroundColor: "#000000",
 },
