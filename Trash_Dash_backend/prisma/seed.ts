@@ -3,6 +3,14 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const ADMIN_TEST_ACCOUNT = {
+  username: "AdminTest",
+  email: "admin@admin.admin",
+  password: "admin123",
+  coins: 999_999_999,
+  totalScore: 999_999_999
+};
+
 type BinCode = "carta" | "multi" | "umido" | "vetro" | "secco" | "rs";
 
 type BinSeed = {
@@ -691,10 +699,16 @@ async function seedRules() {
 
     await prisma.wasteItem.deleteMany({ where: { type: { is: { ruleSetId: ruleSet.id } } } });
 
+    const insertedWasteKeys = new Set<string>();
+
     for (const [code, name, icon, description, difficulty] of WASTES) {
       const targetCode = targetBinForWaste(code, name, rule);
       const typeId = typeByCode.get(targetCode);
       if (!typeId) continue;
+
+      const wasteKey = `${typeId}:${name}`;
+      if (insertedWasteKeys.has(wasteKey)) continue;
+      insertedWasteKeys.add(wasteKey);
 
       await prisma.wasteItem.create({
         data: {
@@ -726,6 +740,7 @@ async function seedItems() {
 
 async function seedUsers() {
   const passwordHash = await bcrypt.hash("password123", 12);
+  const itemIds = ITEMS.map((item) => item.id);
   const users = [
     { username: "EcoSamurai", email: "eco@trashdash.local", totalScore: 1250, coins: 400 },
     { username: "GretaW", email: "greta@trashdash.local", totalScore: 1120, coins: 320 },
@@ -765,6 +780,39 @@ async function seedUsers() {
       }
     });
   }
+
+  const adminPasswordHash = await bcrypt.hash(ADMIN_TEST_ACCOUNT.password, 12);
+  const existingAdmin = await prisma.user.findUnique({ where: { email: ADMIN_TEST_ACCOUNT.email } });
+  const adminUser = existingAdmin
+    ? await prisma.user.update({
+        where: { id: existingAdmin.id },
+        data: {
+          passwordHash: adminPasswordHash,
+          coins: ADMIN_TEST_ACCOUNT.coins,
+          totalScore: ADMIN_TEST_ACCOUNT.totalScore
+        }
+      })
+    : await prisma.user.create({
+        data: {
+          username: ADMIN_TEST_ACCOUNT.username,
+          email: ADMIN_TEST_ACCOUNT.email,
+          passwordHash: adminPasswordHash,
+          coins: ADMIN_TEST_ACCOUNT.coins,
+          totalScore: ADMIN_TEST_ACCOUNT.totalScore,
+          settings: { create: { locationPromptSeen: true } }
+        }
+      });
+
+  await prisma.setting.upsert({
+    where: { userId: adminUser.id },
+    update: { equippedItemId: "tree_green", locationPromptSeen: true },
+    create: { userId: adminUser.id, equippedItemId: "tree_green", locationPromptSeen: true }
+  });
+
+  await prisma.purchase.createMany({
+    data: itemIds.map((itemId) => ({ userId: adminUser.id, itemId })),
+    skipDuplicates: true
+  });
 }
 
 async function main() {

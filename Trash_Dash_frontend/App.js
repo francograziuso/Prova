@@ -5000,7 +5000,10 @@ const handleJoinLobby = async () => {
 }
 
 function LocationConsentPrompt() {
-  if (!showLocationPrompt || !currentUser || screen !== "menu") return null;
+  const shouldShowLocationPrompt =
+    screen === "menu" && Boolean(currentUser) && (showLocationPrompt || !locationPromptSeen);
+
+  if (!shouldShowLocationPrompt) return null;
 
   return (
     <View style={styles.locationConsentOverlay}>
