@@ -122,12 +122,12 @@ Health:
 curl http://localhost:4000/api/health
 ```
 
-Login utente demo:
+Login account admin:
 
 ```bash
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"mario@trashdash.local","password":"password123"}'
+  -d '{"email":"admin@admin.admin","password":"admin123"}'
 ```
 
 Catalogo localizzato:

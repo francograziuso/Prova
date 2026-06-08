@@ -3259,6 +3259,7 @@ export default function App() {
   const [sessionRestored, setSessionRestored] = useState(false);
   const catalogBinsCacheRef = useRef(new Map());
   const catalogWasteCacheRef = useRef(new Map());
+  const locationRequestInProgressRef = useRef(false);
 
  
 // 2. POI INSERIAMO I RIFERIMENTI E LE LOGICHE AUDIO
@@ -4222,9 +4223,13 @@ const reverseGeocodeCoordinates = async (latitude, longitude) => {
 
 const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) => {
   try {
+    if (requestPermission) {
+      locationRequestInProgressRef.current = true;
+    }
+
     let permission = await getLocationPermission();
 
-    if (permission.status !== "granted" && requestPermission && permission.canAskAgain !== false) {
+    if (permission.status !== "granted" && requestPermission) {
       permission = await Location.requestForegroundPermissionsAsync();
     }
 
@@ -4234,7 +4239,7 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
         setLocationConsentMode(LOCATION_CONSENT.never);
         await writeLocationConsent(LOCATION_CONSENT.never).catch(() => {});
       }
-      await loadNationalLocationRules("UNI 11686");
+      await loadNationalLocationRules(text.locationPermissionDeniedStatus || "UNI 11686");
       return false;
     }
 
@@ -4249,7 +4254,7 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
 
     if (!servicesEnabled) {
       if (requestPermission) setLocalization(false);
-      await loadNationalLocationRules("UNI 11686");
+      await loadNationalLocationRules(text.locationUnavailableStatus || "UNI 11686");
       return false;
     }
 
@@ -4292,14 +4297,22 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
     return true;
   } catch (error) {
     console.log("Localizzazione non riuscita:", error.message);
-    await loadNationalLocationRules("UNI 11686").catch((fallbackError) =>
+    await loadNationalLocationRules(text.locationUnavailableStatus || "UNI 11686").catch((fallbackError) =>
       console.log("Fallback regole nazionali non riuscito:", fallbackError.message)
     );
     return false;
+  } finally {
+    if (requestPermission) {
+      locationRequestInProgressRef.current = false;
+    }
   }
 };
 
 const syncLocationRules = async ({ forceEnabled = localization } = {}) => {
+  if (locationRequestInProgressRef.current) {
+    return true;
+  }
+
   if (!forceEnabled) {
     await loadNationalLocationRules("UNI 11686");
     return false;
@@ -4384,9 +4397,9 @@ const handleLocalizationChange = async (value) => {
 
   const applied = await tryApplyDeviceLocationRules({ requestPermission: true });
   await persistLocationPromptDecision(applied);
+  setLocalization(applied);
 
   if (!applied) {
-    setLocalization(false);
     await loadNationalLocationRules("UNI 11686").catch((error) =>
       console.log("Ripristino regole UNI non riuscito:", error.message)
     );

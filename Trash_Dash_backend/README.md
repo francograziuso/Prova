@@ -30,11 +30,11 @@ Health check:
 curl http://localhost:4000/api/health
 ```
 
-Utente demo seedato:
+Account admin seedato:
 
 ```text
-email: mario@trashdash.local
-password: password123
+email: admin@admin.admin
+password: admin123
 ```
 
 ## Endpoint principali

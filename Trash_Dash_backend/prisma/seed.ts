@@ -11,14 +11,7 @@ const ADMIN_TEST_ACCOUNT = {
   totalScore: 999_999_999
 };
 
-const SAMPLE_USER_EMAILS = [
-  "eco@trashdash.local",
-  "greta@trashdash.local",
-  "king@trashdash.local",
-  "dev@trashdash.local",
-  "buster@trashdash.local",
-  "mario@trashdash.local"
-];
+const DEMO_USER_EMAIL_DOMAIN = "@trashdash.local";
 
 type BinCode = "carta" | "multi" | "umido" | "vetro" | "secco" | "rs";
 
@@ -751,7 +744,7 @@ async function seedUsers() {
   const itemIds = ITEMS.map((item) => item.id);
 
   await prisma.user.deleteMany({
-    where: { email: { in: SAMPLE_USER_EMAILS } }
+    where: { email: { endsWith: DEMO_USER_EMAIL_DOMAIN } }
   });
 
   const adminPasswordHash = await bcrypt.hash(ADMIN_TEST_ACCOUNT.password, 12);

@@ -100,12 +100,16 @@ try {
 Write-Step "Creo .env backend se manca"
 $BackendEnvPath = Join-Path $BackendPath ".env"
 if (-not (Test-Path -LiteralPath $BackendEnvPath)) {
+  $SecretBytes = New-Object byte[] 32
+  [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($SecretBytes)
+  $JwtSecret = [Convert]::ToBase64String($SecretBytes)
+
   $BackendEnv = @"
 PORT=4000
 NODE_ENV=development
 CORS_ORIGIN=*
 DATABASE_URL="postgresql://trashdash:trashdash@localhost:5434/trashdash?schema=public"
-JWT_SECRET=change-me-trashdash-production
+JWT_SECRET=$JwtSecret
 JWT_EXPIRES_IN=7d
 LOBBY_TTL_MINUTES=20
 "@
