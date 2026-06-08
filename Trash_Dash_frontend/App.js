@@ -591,19 +591,19 @@ const HARD_WASTES = expandWastePool("Difficile", HARD_WASTES_BASE);
     lobbyCreateFailed: "Could not create lobby",
     lobbyJoinFailed: "Could not join lobby",
 
-    locationPromptTitle: "ATTIVA LOCALIZZAZIONE",
+    locationPromptTitle: "ENABLE LOCATION",
     locationPromptBody:
       "We use your location only to apply the correct bin rules and colors for your area. If you do not enable it, we will use the national standard.",
-    locationAlways: "ATTIVA",
+    locationAlways: "ENABLE",
     locationOnce: "",
-    locationNever: "DISATTIVA",
+    locationNever: "DISABLE",
     locationStatusLabel: "Rules",
     locationModeLabel: "Choice",
     locationModeAlways: "Always",
     locationModeOnce: "Enabled",
     locationModeNever: "Never",
     locationModeUnset: "Not chosen",
-    locationStandardStatus: "Standard nazionale: UNI 11686",
+    locationStandardStatus: "National standard: UNI 11686",
     locationPermissionDeniedStatus: "Permission denied: national standard UNI 11686",
     locationOutsideItalyStatus: "Outside Italy: national standard UNI 11686",
     locationUnavailableStatus: "Location unavailable: national standard UNI 11686",
@@ -1992,7 +1992,7 @@ const MINI_GAME_SESSION_RECORD = {
  
 function PlantRunner({ playCrashSfx, text }) {
   const { width, height } = useWindowDimensions();
-  const stageHeight = Math.min(326, Math.max(286, height * 0.36));
+  const stageHeight = Math.min(388, Math.max(332, height * 0.43));
  
   const jumpAnim = useRef(new Animated.Value(0)).current;
   const stepAnim = useRef(new Animated.Value(0)).current;
@@ -2029,7 +2029,7 @@ function PlantRunner({ playCrashSfx, text }) {
   const miniStageWidthRef = useRef(width);
  
   const DRAGON_LEFT = 18;
-  const DRAGON_WIDTH = 96;
+  const DRAGON_WIDTH = 86;
   const LONG_JUMP_Y = -148;
   const JUMP_START_VELOCITY = -242;
   const HOLD_MAX_SECONDS = 0.72;
@@ -4274,8 +4274,8 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
     const area = { region, capitalCity, latitude, longitude };
 
     setGeoArea(area);
-    const catalog = await loadCatalogRules(area);
-    return Boolean(catalog?.localFallback || (catalog?.ruleSet && !catalog.ruleSet.isDefault));
+    await loadCatalogRules(area);
+    return true;
   } catch (error) {
     console.log("Localizzazione non riuscita:", error.message);
     await loadNationalLocationRules("UNI 11686").catch((fallbackError) =>
@@ -6644,9 +6644,9 @@ plantRunnerGroundLine: {
  
 runnerGroundShadow: {
   position: "absolute",
-  left: 48,
+  left: 44,
   bottom: 28,
-  width: 82,
+  width: 74,
   height: 12,
   borderRadius: 999,
   backgroundColor: "#000000",
@@ -11608,15 +11608,15 @@ hugeMenuLogo: {
   },
 
   plantRunnerCharacter: {
-    width: 125,
-    height: 106,
+    width: 112,
+    height: 95,
     alignItems: "center",
     justifyContent: "flex-end",
   },
 
   runnerDinoBodyWrap: {
-    width: 110,
-    height: 103,
+    width: 99,
+    height: 93,
     zIndex: 3,
   },
 

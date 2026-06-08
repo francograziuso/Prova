@@ -1,6 +1,13 @@
-# TrashDash - Avvio completo backend e frontend
+# TrashDash - Avvio applicazione
 
-Questa guida parte dalla root del progetto clonato da GitHub:
+Questo README e' unico per tutto il progetto, ma gli script sono separati:
+
+1. Script backend + Docker
+2. Script frontend Expo
+
+Apri due finestre PowerShell separate. Esegui prima lo script backend, poi lo script frontend.
+
+## Struttura attesa
 
 ```text
 TrashDash_fullstack_codex/
@@ -8,22 +15,20 @@ TrashDash_fullstack_codex/
   Trash_Dash_frontend/
 ```
 
-Devi modificare una sola riga: `$RootPath`, cioe' il percorso della cartella che vedi in Esplora file.
-
 ## Requisiti
 
-- Node.js 20, 21, 22, 23 o 24
+- Node.js >=20 e <25
 - npm incluso con Node.js
-- Docker Desktop installato e avviabile
+- Docker Desktop installato e avviato
 - Expo Go sul telefono
 - PC e telefono sulla stessa rete Wi-Fi
 
-## Script unico di avvio Windows PowerShell
+## Script backend + Docker
 
-Apri PowerShell, incolla tutto lo script, cambia solo `$RootPath`, poi premi Invio.
+Modifica solo `$BackendPath`, inserendo il percorso della cartella `Trash_Dash_backend`.
 
 ```powershell
-$RootPath = "C:\PERCORSO\TrashDash_fullstack_codex"
+$BackendPath = "C:\PERCORSO\TrashDash_fullstack_codex\Trash_Dash_backend"
 
 $ErrorActionPreference = "Stop"
 
@@ -51,13 +56,6 @@ function Assert-File {
   }
 }
 
-function Assert-Directory {
-  param([Parameter(Mandatory = $true)][string]$Path)
-  if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
-    throw "Cartella mancante: $Path"
-  }
-}
-
 function Wait-Port {
   param(
     [Parameter(Mandatory = $true)][int]$Port,
@@ -74,60 +72,12 @@ function Wait-Port {
   return $false
 }
 
-function Get-LanIp {
-  $ip = Get-NetIPAddress -AddressFamily IPv4 |
-    Where-Object {
-      $_.IPAddress -notlike "127.*" -and
-      $_.IPAddress -notlike "169.254.*" -and
-      $_.InterfaceOperationalStatus -eq "Up"
-    } |
-    Sort-Object InterfaceMetric |
-    Select-Object -First 1 -ExpandProperty IPAddress
-
-  if (-not $ip) {
-    throw "Impossibile trovare l'IP LAN del PC. Controlla la connessione Wi-Fi/Ethernet."
-  }
-
-  return $ip
-}
-
-function Ensure-EnvFile {
-  param(
-    [Parameter(Mandatory = $true)][string]$Folder,
-    [Parameter(Mandatory = $true)][string]$FallbackContent
-  )
-
-  $envPath = Join-Path $Folder ".env"
-  if (-not (Test-Path -LiteralPath $envPath)) {
-    Set-Content -LiteralPath $envPath -Value $FallbackContent -Encoding UTF8
-  }
-}
-
-Write-Step "Controllo root progetto"
-$RootPath = (Resolve-Path -LiteralPath $RootPath).Path
-$BackendPath = Join-Path $RootPath "Trash_Dash_backend"
-$FrontendPath = Join-Path $RootPath "Trash_Dash_frontend"
-
-Assert-Directory $RootPath
-Assert-Directory $BackendPath
-Assert-Directory $FrontendPath
-
+Write-Step "Controllo percorso backend"
+$BackendPath = (Resolve-Path -LiteralPath $BackendPath).Path
 Assert-File (Join-Path $BackendPath "package.json")
 Assert-File (Join-Path $BackendPath "docker-compose.yml")
 Assert-File (Join-Path $BackendPath "prisma\schema.prisma")
 Assert-File (Join-Path $BackendPath "prisma\seed.ts")
-Assert-File (Join-Path $FrontendPath "package.json")
-Assert-File (Join-Path $FrontendPath "App.js")
-Assert-File (Join-Path $FrontendPath "assets\trashdash_runner_dragon.png")
-
-$duplicateFrontends = Get-ChildItem -LiteralPath $RootPath -Recurse -Directory -Filter "Trash_Dash_frontend" | Select-Object -ExpandProperty FullName
-$duplicateBackends = Get-ChildItem -LiteralPath $RootPath -Recurse -Directory -Filter "Trash_Dash_backend" | Select-Object -ExpandProperty FullName
-if ($duplicateFrontends.Count -ne 1 -or $duplicateBackends.Count -ne 1) {
-  Write-Host "ATTENZIONE: trovate cartelle frontend/backend duplicate dentro la root:" -ForegroundColor Yellow
-  $duplicateFrontends | ForEach-Object { Write-Host "Frontend: $_" -ForegroundColor Yellow }
-  $duplicateBackends | ForEach-Object { Write-Host "Backend:  $_" -ForegroundColor Yellow }
-  throw "Risolvi i duplicati o scegli la root corretta prima di avviare."
-}
 
 Write-Step "Controllo strumenti"
 Assert-Command -Name "node" -InstallHint "Installa Node.js da https://nodejs.org/"
@@ -140,36 +90,17 @@ if ($nodeMajor -lt 20 -or $nodeMajor -ge 25) {
   throw "Node.js deve essere >=20 e <25. Versione rilevata: $nodeVersionText"
 }
 
-Write-Step "Avvio o verifica Docker Desktop"
+Write-Step "Verifica Docker Desktop"
 try {
   docker info | Out-Null
 } catch {
-  $dockerDesktop = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-  if (Test-Path -LiteralPath $dockerDesktop) {
-    Start-Process -FilePath $dockerDesktop | Out-Null
-    Write-Host "Docker Desktop avviato, attendo che sia pronto..."
-    $deadline = (Get-Date).AddSeconds(120)
-    do {
-      Start-Sleep -Seconds 4
-      try {
-        docker info | Out-Null
-        $dockerReady = $true
-      } catch {
-        $dockerReady = $false
-      }
-    } while (-not $dockerReady -and (Get-Date) -lt $deadline)
-  }
-
-  if (-not $dockerReady) {
-    throw "Docker non e' pronto. Apri Docker Desktop e rilancia lo script."
-  }
+  throw "Docker non e' pronto. Apri Docker Desktop e rilancia lo script."
 }
 
-$LanIp = Get-LanIp
-Write-Host "IP LAN rilevato: $LanIp" -ForegroundColor Green
-
-Write-Step "Creo o aggiorno file .env"
-$BackendEnv = @"
+Write-Step "Creo .env backend se manca"
+$BackendEnvPath = Join-Path $BackendPath ".env"
+if (-not (Test-Path -LiteralPath $BackendEnvPath)) {
+  $BackendEnv = @"
 PORT=4000
 NODE_ENV=development
 CORS_ORIGIN=*
@@ -178,18 +109,15 @@ JWT_SECRET=change-me-trashdash-production
 JWT_EXPIRES_IN=7d
 LOBBY_TTL_MINUTES=20
 "@
-Ensure-EnvFile -Folder $BackendPath -FallbackContent $BackendEnv
+  Set-Content -LiteralPath $BackendEnvPath -Value $BackendEnv -Encoding UTF8
+}
 
-$FrontendEnv = @"
-EXPO_PUBLIC_API_BASE_URL=http://$LanIp`:4000/api
-EXPO_PUBLIC_WS_URL=ws://$LanIp`:4000/ws
-"@
-Set-Content -LiteralPath (Join-Path $FrontendPath ".env") -Value $FrontendEnv -Encoding UTF8
-
-Write-Step "Installazione backend"
 Push-Location $BackendPath
 try {
+  Write-Step "Installazione dipendenze backend"
   npm install
+
+  Write-Step "Generazione Prisma"
   npm run prisma:generate
 
   Write-Step "Avvio PostgreSQL Docker"
@@ -199,46 +127,117 @@ try {
     throw "PostgreSQL non risponde sulla porta 5434."
   }
 
-  Write-Step "Setup database Prisma"
+  Write-Step "Setup database"
   npm run prisma:push
   npm run seed
 
   Write-Step "Verifica backend"
   npm run typecheck
   npm run build
+
+  Write-Step "Avvio backend"
+  npm run dev
 } finally {
   Pop-Location
 }
-
-Write-Step "Installazione frontend"
-Push-Location $FrontendPath
-try {
-  npm install
-  npx expo install --check
-  npx expo export --platform android --output-dir "$env:TEMP\trashdash-export-check"
-} finally {
-  Pop-Location
-}
-
-Write-Step "Avvio backend e frontend"
-$backendCommand = "cd `"$BackendPath`"; npm run dev"
-$frontendCommand = "cd `"$FrontendPath`"; npx expo start --lan"
-
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand
-Start-Sleep -Seconds 5
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $frontendCommand
-
-Write-Host ""
-Write-Host "TrashDash avviato." -ForegroundColor Green
-Write-Host "Backend API: http://localhost:4000/api"
-Write-Host "Backend da telefono: http://$LanIp`:4000/api"
-Write-Host "Expo mostrera' QR e URL Metro nella seconda finestra."
 ```
 
-## Se qualcosa non parte
+## Script frontend
 
-- Se lo script segnala duplicati, la root scelta non e' quella giusta oppure contiene piu' copie del progetto.
-- Se Docker non risponde, apri Docker Desktop e aspetta che dica "Docker is running".
+Modifica solo `$FrontendPath`, inserendo il percorso della cartella `Trash_Dash_frontend`.
+
+```powershell
+$FrontendPath = "C:\PERCORSO\TrashDash_fullstack_codex\Trash_Dash_frontend"
+
+$ErrorActionPreference = "Stop"
+
+function Write-Step {
+  param([string]$Message)
+  Write-Host ""
+  Write-Host "== $Message ==" -ForegroundColor Cyan
+}
+
+function Assert-Command {
+  param(
+    [Parameter(Mandatory = $true)][string]$Name,
+    [Parameter(Mandatory = $true)][string]$InstallHint
+  )
+
+  if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
+    throw "$Name non trovato. $InstallHint"
+  }
+}
+
+function Assert-File {
+  param([Parameter(Mandatory = $true)][string]$Path)
+  if (-not (Test-Path -LiteralPath $Path)) {
+    throw "File mancante: $Path"
+  }
+}
+
+function Get-LanIp {
+  $ip = Get-NetIPAddress -AddressFamily IPv4 |
+    Where-Object {
+      $_.IPAddress -notlike "127.*" -and
+      $_.IPAddress -notlike "169.254.*" -and
+      $_.InterfaceOperationalStatus -eq "Up"
+    } |
+    Sort-Object InterfaceMetric |
+    Select-Object -First 1 -ExpandProperty IPAddress
+
+  if (-not $ip) {
+    throw "Impossibile trovare l'IP LAN del PC. Controlla la rete Wi-Fi/Ethernet."
+  }
+
+  return $ip
+}
+
+Write-Step "Controllo percorso frontend"
+$FrontendPath = (Resolve-Path -LiteralPath $FrontendPath).Path
+Assert-File (Join-Path $FrontendPath "package.json")
+Assert-File (Join-Path $FrontendPath "App.js")
+Assert-File (Join-Path $FrontendPath "app.json")
+Assert-File (Join-Path $FrontendPath "assets\trashdash_icon.png")
+Assert-File (Join-Path $FrontendPath "assets\trashdash_runner_dragon.png")
+
+Write-Step "Controllo strumenti"
+Assert-Command -Name "node" -InstallHint "Installa Node.js da https://nodejs.org/"
+Assert-Command -Name "npm" -InstallHint "Installa Node.js completo di npm."
+Assert-Command -Name "npx" -InstallHint "Installa Node.js completo di npx."
+
+$nodeVersionText = node -v
+$nodeMajor = [int](($nodeVersionText -replace "^v", "").Split(".")[0])
+if ($nodeMajor -lt 20 -or $nodeMajor -ge 25) {
+  throw "Node.js deve essere >=20 e <25. Versione rilevata: $nodeVersionText"
+}
+
+$LanIp = Get-LanIp
+Write-Host "IP LAN rilevato: $LanIp" -ForegroundColor Green
+
+Write-Step "Aggiorno .env frontend"
+$FrontendEnv = @"
+EXPO_PUBLIC_API_BASE_URL=http://$LanIp`:4000/api
+EXPO_PUBLIC_WS_URL=ws://$LanIp`:4000/ws
+"@
+Set-Content -LiteralPath (Join-Path $FrontendPath ".env") -Value $FrontendEnv -Encoding UTF8
+
+Push-Location $FrontendPath
+try {
+  Write-Step "Installazione dipendenze frontend"
+  npm install
+
+  Write-Step "Verifica pacchetti Expo"
+  npx expo install --check
+
+  Write-Step "Avvio Expo"
+  npx expo start --lan -c
+} finally {
+  Pop-Location
+}
+```
+
+## Note rapide
+
 - Se Expo Go non raggiunge il backend, controlla firewall Windows sulle porte `4000` e `8081`.
-- Se il telefono non e' sulla stessa rete del PC, usa `npx expo start --tunnel` dentro `Trash_Dash_frontend`.
-- Se cambi rete Wi-Fi, rilancia lo script: aggiorna automaticamente l'IP nel `.env` frontend.
+- Se telefono e PC non sono sulla stessa rete, nel frontend puoi sostituire `--lan` con `--tunnel`.
+- Se l'icona o asset vecchi restano visibili, il `-c` dello script frontend pulisce la cache Metro.
