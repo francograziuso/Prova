@@ -426,6 +426,7 @@ const HARD_WASTES = expandWastePool("Difficile", HARD_WASTES_BASE);
     logout: "Disconnetti",
     loading: "Caricamento...",
     online: "Online",
+    notRanked: "Non classificato",
 
     authMissingFields: "Inserisci email e password",
     authPasswordShort: "La password deve avere almeno 8 caratteri",
@@ -576,6 +577,7 @@ const HARD_WASTES = expandWastePool("Difficile", HARD_WASTES_BASE);
     logout: "Log out",
     loading: "Loading...",
     online: "Online",
+    notRanked: "Not ranked",
 
     authMissingFields: "Enter email and password",
     authPasswordShort: "Password must be at least 8 characters",
@@ -2032,6 +2034,8 @@ function PlantRunner({ playCrashSfx, text }) {
   const DRAGON_WIDTH = 86;
   const LONG_JUMP_Y = -148;
   const JUMP_START_VELOCITY = -242;
+  const APEX_DESCENT_VELOCITY_HELD = 72;
+  const APEX_DESCENT_VELOCITY_RELEASED = 170;
   const HOLD_MAX_SECONDS = 0.72;
   const HOLD_GRAVITY = 330;
   const RELEASE_GRAVITY = 930;
@@ -2226,7 +2230,9 @@ function PlantRunner({ playCrashSfx, text }) {
  
     if (currentY <= LONG_JUMP_Y) {
       currentY = LONG_JUMP_Y;
-      currentVelocity = isPressingJumpRef.current ? 38 : 72;
+      currentVelocity = isPressingJumpRef.current
+        ? APEX_DESCENT_VELOCITY_HELD
+        : APEX_DESCENT_VELOCITY_RELEASED;
     }
  
     if (currentY >= 0) {
@@ -3248,6 +3254,7 @@ export default function App() {
   const [authToken, setAuthToken] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [leaderboardRows, setLeaderboardRows] = useState([]);
+  const [leaderboardGuestPosition, setLeaderboardGuestPosition] = useState(null);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [sessionRestored, setSessionRestored] = useState(false);
   const catalogBinsCacheRef = useRef(new Map());
@@ -3810,7 +3817,7 @@ const getLocalizedLocationStatus = () => {
     return text.locationStandardStatus || "Standard nazionale: UNI 11686";
   }
 
-  if (/permesso|gps disattivato|fuori italia|non disponibile/i.test(locationStatus)) {
+  if (/permesso|permission|gps disattivato|gps disabled|fuori italia|outside italy|non disponibile|unavailable/i.test(locationStatus)) {
     return text.locationStandardStatus || "Standard nazionale: UNI 11686";
   }
 
@@ -3866,7 +3873,10 @@ const applyBackendProfile = async (payload, tokenValue = authToken) => {
   setLocationConsentMode(effectiveConsentMode);
   setLocationPromptSeen(hasSeenLocationPrompt);
   setShowLocationPrompt(!hasSeenLocationPrompt);
-  setLocalization(hasSeenLocationPrompt && settings.localization === true);
+  setLocalization(
+    effectiveConsentMode === LOCATION_CONSENT.always ||
+      (hasSeenLocationPrompt && settings.localization === true)
+  );
 
   if (tokenValue && hasStoredConsent && settings.locationPromptSeen !== true) {
     apiRequest("/me/settings", {
@@ -4187,13 +4197,6 @@ const mapExpoGeocodeResult = (item = {}) => {
 };
 
 const reverseGeocodeCoordinates = async (latitude, longitude) => {
-  try {
-    const backendGeo = await reverseGeocodeWithBigDataCloud(latitude, longitude, "it");
-    if (backendGeo) return backendGeo;
-  } catch (error) {
-    console.log("Reverse geocode backend non disponibile:", error.message);
-  }
-
   const localResults = await Location.reverseGeocodeAsync({ latitude, longitude }).catch((error) => {
     console.log("Reverse geocode dispositivo non disponibile:", error.message);
     return [];
@@ -4201,6 +4204,17 @@ const reverseGeocodeCoordinates = async (latitude, longitude) => {
 
   if (localResults?.[0]) {
     return mapExpoGeocodeResult(localResults[0]);
+  }
+
+  try {
+    const backendGeo = await reverseGeocodeWithBigDataCloud(
+      latitude,
+      longitude,
+      language === "English" ? "en" : "it"
+    );
+    if (backendGeo) return backendGeo;
+  } catch (error) {
+    console.log("Reverse geocode backend non disponibile:", error.message);
   }
 
   return null;
@@ -4251,23 +4265,23 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
 
     if (!geo) {
       setGeoArea({ latitude, longitude });
-      await loadCatalogRules(null, { statusMessage: "UNI 11686" });
-      return false;
+      await loadCatalogRules(null, { statusMessage: text.locationUnavailableStatus || "UNI 11686" });
+      return true;
     }
 
     const countryCode = normalizeCountryCode(geo.countryCode || geo.isoCountryCode || geo.country);
 
     if (countryCode && countryCode !== "IT") {
-      await loadNationalLocationRules("UNI 11686");
-      return false;
+      await loadNationalLocationRules(text.locationOutsideItalyStatus || "UNI 11686");
+      return true;
     }
 
     const region = normalizeItalianRegion(geo.principalSubdivision || geo.region || geo.subregion);
 
     if (!region) {
       setGeoArea({ latitude, longitude });
-      await loadCatalogRules(null, { statusMessage: "UNI 11686" });
-      return false;
+      await loadCatalogRules(null, { statusMessage: text.locationUnavailableStatus || "UNI 11686" });
+      return true;
     }
 
     const capitalCity = resolveCapitalCity(region, geo.city || geo.locality);
@@ -4551,10 +4565,15 @@ const handleExitApp = async () => {
 const loadLeaderboard = async () => {
   setLeaderboardLoading(true);
   try {
-    const result = await apiRequest("/leaderboard?limit=10");
+    const guestScore = currentUser?.isGuest ? Math.max(0, currentUser.totalScore || 0) : 0;
+    const guestScoreParam = guestScore > 0 ? `&guestScore=${encodeURIComponent(guestScore)}` : "";
+    const result = await apiRequest(`/leaderboard?limit=10${guestScoreParam}`);
     setLeaderboardRows(result.items || []);
+    setLeaderboardGuestPosition(result.guestPosition || null);
   } catch (error) {
     console.log("Leaderboard backend non disponibile:", error.message);
+    setLeaderboardRows([]);
+    setLeaderboardGuestPosition(null);
   } finally {
     setLeaderboardLoading(false);
   }
@@ -4564,7 +4583,7 @@ useEffect(() => {
   if (screen === "leaderboard") {
     loadLeaderboard();
   }
-}, [screen]);
+}, [screen, currentUser?.isGuest, currentUser?.totalScore]);
 
 const submitGameResultToBackend = async (status, finalScore, mode = gameMode, livesOverride = lives) => {
   const backendStatus = status === "VITTORIA" ? "WIN" : status === "ABBANDONATA" ? "ABANDONED" : "LOSE";
@@ -6034,32 +6053,56 @@ function ResultScreen() {
 }
  
   function LeaderboardScreen() {
-  const staticLeaderboard = [
-    { pos: 1, name: "EcoSamurai", score: 1250 },
-    { pos: 2, name: "GretaW", score: 1120 },
-    { pos: 3, name: "RecycleKing", score: 990 },
-    { pos: 4, name: "GreenDev", score: 870 },
-    { pos: 5, name: "TrashBuster", score: 720 },
-  ];
-
-  const displayLeaderboard = leaderboardRows.length > 0
-    ? leaderboardRows.slice(0, 10).map((row, index) => ({
-        pos: row.position || index + 1,
-        name: row.username || row.name,
-        score: row.score ?? row.totalScore ?? 0,
-      }))
-    : staticLeaderboard;
-
   const personalScore = currentUser?.totalScore ?? points ?? 0;
   const personalName = getDisplayUsername();
-  const personalRankEntry = displayLeaderboard.find(
-    (player) => player.name === personalName || player.score === personalScore
-  );
-  const personalRankLabel = personalRankEntry?.pos
+  const guestCanRank = Boolean(currentUser?.isGuest) && personalScore > 0;
+
+  const registeredLeaderboard = leaderboardRows.slice(0, 10).map((row, index) => ({
+    pos: row.position || index + 1,
+    name: row.username || row.name,
+    userId: row.userId,
+    score: row.score ?? row.totalScore ?? 0,
+    isGuest: false,
+  }));
+
+  const guestRank = guestCanRank
+    ? leaderboardGuestPosition ||
+      registeredLeaderboard.filter((player) => player.score >= personalScore).length + 1
+    : null;
+
+  const registeredRowsForDisplay = guestRank && guestRank <= 10
+    ? registeredLeaderboard.map((player) => (
+        player.pos >= guestRank ? { ...player, pos: player.pos + 1 } : player
+      ))
+    : registeredLeaderboard;
+
+  const displayLeaderboard = guestRank && guestRank <= 10
+    ? [
+        ...registeredRowsForDisplay,
+        {
+          pos: guestRank,
+          name: personalName,
+          score: personalScore,
+          isGuest: true,
+        },
+      ]
+        .sort((a, b) => a.pos - b.pos || (a.isGuest ? 1 : 0))
+        .slice(0, 10)
+    : registeredRowsForDisplay;
+
+  const personalRankEntry = currentUser?.isGuest
+    ? displayLeaderboard.find((player) => player.isGuest)
+    : displayLeaderboard.find((player) => player.userId === currentUser?.id || player.name === personalName);
+
+  const personalRankLabel = currentUser?.isGuest
+    ? guestRank
+      ? `#${guestRank} ${text.inLeaderboard}`
+      : text.notRanked
+    : personalRankEntry?.pos
     ? `#${personalRankEntry.pos} ${text.inLeaderboard}`
     : authToken
     ? text.online
-    : `#6 ${text.inLeaderboard}`;
+    : text.notRanked;
 
   return (
     <ScreenShell muted>
@@ -6090,6 +6133,10 @@ function ResultScreen() {
           ) : null}
 
           <View style={styles.tdLeaderboardRowsBoxFixed}>
+            {displayLeaderboard.length === 0 && !leaderboardLoading ? (
+              <Text allowFontScaling={false} style={styles.leaderboardNameText}>{text.notRanked}</Text>
+            ) : null}
+
             {displayLeaderboard.slice(0, 10).map((player) => (
               <View key={`${player.pos}-${player.name}`} style={styles.leaderboardItemRow}>
                 <Text allowFontScaling={false} style={styles.leaderboardRankText}>
@@ -11599,7 +11646,7 @@ hugeMenuLogo: {
   miniRunnerDragonTouchArea: {
     position: "absolute",
     left: 2,
-    bottom: 18,
+    bottom: 34,
     width: 138,
     height: 118,
     zIndex: 8,

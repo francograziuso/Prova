@@ -11,6 +11,15 @@ const ADMIN_TEST_ACCOUNT = {
   totalScore: 999_999_999
 };
 
+const SAMPLE_USER_EMAILS = [
+  "eco@trashdash.local",
+  "greta@trashdash.local",
+  "king@trashdash.local",
+  "dev@trashdash.local",
+  "buster@trashdash.local",
+  "mario@trashdash.local"
+];
+
 type BinCode = "carta" | "multi" | "umido" | "vetro" | "secco" | "rs";
 
 type BinSeed = {
@@ -739,47 +748,11 @@ async function seedItems() {
 }
 
 async function seedUsers() {
-  const passwordHash = await bcrypt.hash("password123", 12);
   const itemIds = ITEMS.map((item) => item.id);
-  const users = [
-    { username: "EcoSamurai", email: "eco@trashdash.local", totalScore: 1250, coins: 400 },
-    { username: "GretaW", email: "greta@trashdash.local", totalScore: 1120, coins: 320 },
-    { username: "RecycleKing", email: "king@trashdash.local", totalScore: 990, coins: 260 },
-    { username: "GreenDev", email: "dev@trashdash.local", totalScore: 870, coins: 210 },
-    { username: "TrashBuster", email: "buster@trashdash.local", totalScore: 720, coins: 190 },
-    { username: "Mario", email: "mario@trashdash.local", totalScore: 0, coins: 0 }
-  ];
 
-  for (const user of users) {
-    const existing = await prisma.user.findUnique({
-      where: { email: user.email },
-      include: {
-        settings: true,
-        purchases: { where: { itemId: "tree_green" } }
-      }
-    });
-
-    if (existing) {
-      if (!existing.settings) {
-        await prisma.setting.create({ data: { userId: existing.id } });
-      }
-
-      if (existing.purchases.length === 0) {
-        await prisma.purchase.create({ data: { userId: existing.id, itemId: "tree_green" } });
-      }
-
-      continue;
-    }
-
-    await prisma.user.create({
-      data: {
-        ...user,
-        passwordHash,
-        settings: { create: {} },
-        purchases: { create: { itemId: "tree_green" } }
-      }
-    });
-  }
+  await prisma.user.deleteMany({
+    where: { email: { in: SAMPLE_USER_EMAILS } }
+  });
 
   const adminPasswordHash = await bcrypt.hash(ADMIN_TEST_ACCOUNT.password, 12);
   const existingAdmin = await prisma.user.findUnique({ where: { email: ADMIN_TEST_ACCOUNT.email } });
