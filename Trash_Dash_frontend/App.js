@@ -1923,10 +1923,6 @@ const SFX_VOLUMES = {
 // INTEGRAZIONE BACKEND TRASHDASH
 // ============================================================================
 const DEFAULT_GUEST_NAMES = new Set(["Ospite", "Guest"]);
-const MANUAL_LOCATION_AREAS = Object.entries(ITALIAN_REGION_CAPITALS).map(([region, capitalCity]) => ({
-  region,
-  capitalCity,
-}));
 
 function normalizeLanguageCode(value) {
   if (value === "EN" || value === "English") return "English";
@@ -2009,8 +2005,6 @@ export default function App() {
   const [activeRuleSet, setActiveRuleSet] = useState(null);
   const [geoArea, setGeoArea] = useState(null);
   const [locationStatus, setLocationStatus] = useState("UNI 11686");
-  const [manualLocationRegion, setManualLocationRegion] = useState("Campania");
-  const [showManualLocationMenu, setShowManualLocationMenu] = useState(false);
  
   const [shopItems, setShopItems] = useState(INITIAL_SHOP_ITEMS);
   const [equippedTreeId, setEquippedTreeId] = useState("tree_green");
@@ -2983,34 +2977,6 @@ const loadNationalLocationRules = async (message = "UNI 11686") => {
   setGeoArea(null);
   setLocationStatus(message);
   await loadCatalogRules(null, { statusMessage: message });
-};
-
-const getManualLocationArea = () => {
-  const region = normalizeItalianRegion(manualLocationRegion) || "Campania";
-  const capitalCity = ITALIAN_REGION_CAPITALS[region] || "Napoli";
-  return {
-    countryCode: "IT",
-    region,
-    principalSubdivision: region,
-    capitalCity,
-    city: capitalCity,
-    locality: capitalCity,
-    manual: true,
-  };
-};
-
-const handleManualLocationApply = async () => {
-  const area = getManualLocationArea();
-  const statusMessage = `${text.manualLocationStatusPrefix || "Test manuale"}: ${area.capitalCity} (${area.region})`;
-  setShowManualLocationMenu(false);
-  setGeoArea(area);
-  setLocationStatus(statusMessage);
-  await loadCatalogRules(area, { statusMessage });
-};
-
-const handleManualStandardRules = async () => {
-  setShowManualLocationMenu(false);
-  await loadNationalLocationRules(text.locationStandardStatus || "Standard nazionale: UNI 11686");
 };
 
 const getDevicePosition = async ({ highAccuracy = false } = {}) => {
@@ -5359,8 +5325,6 @@ function ShopScreen() {
 }
  
   function SettingsScreen() {
-    const manualArea = getManualLocationArea();
-
     return (
      <ScreenShell muted>
         <View pointerEvents="box-none" style={styles.headerBar}>
@@ -5387,72 +5351,6 @@ function ShopScreen() {
             </Text>
           </View>
 
-          <View style={styles.manualLocationTestCard}>
-            <Text allowFontScaling={false} style={styles.manualLocationTitleText}>
-              {text.manualLocationTitle}
-            </Text>
-            <Text allowFontScaling={false} style={styles.manualLocationHintText}>
-              {text.manualLocationBody}
-            </Text>
-
-            <TouchableOpacity
-              activeOpacity={0.86}
-              style={styles.manualLocationSelectButton}
-              onPress={withButtonSfx(() => setShowManualLocationMenu((value) => !value))}
-            >
-              <Text allowFontScaling={false} style={styles.manualLocationSelectText}>
-                {manualArea.capitalCity} ({manualArea.region}) ▼
-              </Text>
-            </TouchableOpacity>
-
-            {showManualLocationMenu && (
-              <View style={styles.manualLocationOptionsContainer}>
-                <ScrollView nestedScrollEnabled style={styles.manualLocationOptionsScroll}>
-                  {MANUAL_LOCATION_AREAS.map((area) => (
-                    <TouchableOpacity
-                      key={area.region}
-                      activeOpacity={0.84}
-                      style={[
-                        styles.manualLocationOptionItem,
-                        manualArea.region === area.region && styles.manualLocationOptionItemActive,
-                      ]}
-                      onPress={withButtonSfx(() => {
-                        setManualLocationRegion(area.region);
-                        setShowManualLocationMenu(false);
-                      })}
-                    >
-                      <Text allowFontScaling={false} style={styles.manualLocationOptionText}>
-                        {area.capitalCity} ({area.region})
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            <View style={styles.manualLocationActionsRow}>
-              <TouchableOpacity
-                activeOpacity={0.86}
-                style={styles.manualLocationActionButton}
-                onPress={withButtonSfx(handleManualLocationApply)}
-              >
-                <Text allowFontScaling={false} style={styles.manualLocationActionText}>
-                  {text.manualLocationApply}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.86}
-                style={[styles.manualLocationActionButton, styles.manualLocationStandardButton]}
-                onPress={withButtonSfx(handleManualStandardRules)}
-              >
-                <Text allowFontScaling={false} style={styles.manualLocationActionText}>
-                  {text.manualLocationStandard}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
- 
           <View style={styles.settingToggleItemRow}>
             <Text allowFontScaling={false} style={styles.settingItemLabelText}>
             {text.labelLang}:
