@@ -55,6 +55,7 @@ import {
   groupCatalogWastesByDifficulty,
   getLocalRuleFallback,
   normalizeItalianRegion,
+  resolveItalianAreaFromGeocodePayload,
 } from "./src/domain/location/localRules";
 import { apiRequest, reverseGeocodeWithBigDataCloud } from "./src/infrastructure/api/trashDashApi";
 import { LOCATION_CONSENT, STORAGE_KEYS } from "./src/infrastructure/storage/storageKeys";
@@ -62,6 +63,7 @@ import {
   TRANSLATIONS,
   getShopItemMood,
   getShopItemName,
+  getBinDisplayLabel,
   getWasteDescription,
   getWasteName,
 } from "./src/presentation/i18n/translations";
@@ -2570,9 +2572,17 @@ const getLocationModeLabel = () => {
 
 const getLocalizedLocationStatus = () => {
   const explicitStatusPattern = /permesso|permission|gps|fuori italia|outside italy|regione non riconosciuta|region not recognized|non disponibile|unavailable/i;
+  const translatedExplicitStatus = (() => {
+    if (/permesso.*negato|permission.*denied/i.test(locationStatus)) return text.locationPermissionDeniedStatus;
+    if (/gps.*non disponibile|gps.*unavailable/i.test(locationStatus)) return text.locationGpsUnavailableStatus;
+    if (/fuori italia|outside italy/i.test(locationStatus)) return text.locationOutsideItalyStatus;
+    if (/regione non riconosciuta|region not recognized/i.test(locationStatus)) return text.locationRegionUnknownStatus;
+    if (/localizzazione non disponibile|location unavailable|non disponibile|unavailable/i.test(locationStatus)) return text.locationUnavailableStatus;
+    return "";
+  })();
 
   if (!localization) {
-    if (explicitStatusPattern.test(locationStatus)) return locationStatus;
+    if (explicitStatusPattern.test(locationStatus)) return translatedExplicitStatus || locationStatus;
     return text.locationStandardStatus || "Standard nazionale: UNI 11686";
   }
 
@@ -2580,12 +2590,35 @@ const getLocalizedLocationStatus = () => {
     return text.locationStandardStatus || "Standard nazionale: UNI 11686";
   }
 
+  if (/localizzazione in corso|detecting location/i.test(locationStatus)) {
+    return text.locationInProgressStatus || locationStatus;
+  }
+
+  if (/posizione rilevata|aggiorno regole|location detected|updating rules/i.test(locationStatus)) {
+    return text.locationUpdatingRulesStatus || locationStatus;
+  }
+
   if (/regole locali offline|offline local rules/i.test(locationStatus)) {
-    return locationStatus;
+    const match = locationStatus.match(/:\s*(.+)$/);
+    return match?.[1]
+      ? `${text.locationOfflineRulesPrefix || "Regole locali offline"}: ${match[1]}`
+      : text.locationOfflineRulesPrefix || locationStatus;
+  }
+
+  if (/regole standard offline|standard rules offline/i.test(locationStatus)) {
+    const areaLabel = locationStatus.split("-")[0]?.trim();
+    const suffix = text.locationStandardOfflineSuffix || "regole standard offline";
+    return areaLabel ? `${areaLabel} - ${suffix}` : text.locationStandardStatus || locationStatus;
+  }
+
+  if (/regole standard|standard rules/i.test(locationStatus)) {
+    const areaLabel = locationStatus.split("-")[0]?.trim();
+    const suffix = text.locationStandardRulesSuffix || "regole standard";
+    return areaLabel ? `${areaLabel} - ${suffix}` : text.locationStandardStatus || locationStatus;
   }
 
   if (explicitStatusPattern.test(locationStatus)) {
-    return locationStatus;
+    return translatedExplicitStatus || locationStatus;
   }
 
   if (activeRuleSet && !activeRuleSet.isDefault) {
@@ -2596,8 +2629,8 @@ const getLocalizedLocationStatus = () => {
     return `${geoArea.capitalCity} (${geoArea.region})`;
   }
 
-  if (locationStatus.includes("Posizione rilevata")) {
-    return locationStatus;
+  if (/posizione rilevata|location detected/i.test(locationStatus)) {
+    return text.locationUpdatingRulesStatus || locationStatus;
   }
 
   return locationStatus;
@@ -2857,7 +2890,10 @@ const loadCatalogRules = async (area = null, { statusMessage } = {}) => {
       setActiveBins(fallbackBins);
       setActiveWastePools(buildWastePoolsForBins(fallbackBins));
       setActiveRuleSet(localFallback.ruleSet);
-      setLocationStatus(statusMessage || `Regole locali offline: ${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`);
+      setLocationStatus(
+        statusMessage ||
+          `${text.locationOfflineRulesPrefix || "Regole locali offline"}: ${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`
+      );
       return { ...localFallback, localFallback: true };
     }
 
@@ -2871,7 +2907,7 @@ const loadCatalogRules = async (area = null, { statusMessage } = {}) => {
     } else if (result.ruleSet && !result.ruleSet.isDefault) {
       setLocationStatus(`${result.ruleSet.capitalCity} (${result.ruleSet.region})`);
     } else if (area?.region && area?.capitalCity) {
-      setLocationStatus(`${area.capitalCity} (${area.region}) - regole standard`);
+      setLocationStatus(`${area.capitalCity} (${area.region}) - ${text.locationStandardRulesSuffix || "regole standard"}`);
     } else {
       setLocationStatus("UNI 11686");
     }
@@ -2885,7 +2921,10 @@ const loadCatalogRules = async (area = null, { statusMessage } = {}) => {
       setActiveBins(fallbackBins);
       setActiveWastePools(buildWastePoolsForBins(fallbackBins));
       setActiveRuleSet(localFallback.ruleSet);
-      setLocationStatus(statusMessage || `Regole locali offline: ${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`);
+      setLocationStatus(
+        statusMessage ||
+          `${text.locationOfflineRulesPrefix || "Regole locali offline"}: ${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`
+      );
       return { ...localFallback, offline: true, localFallback: true };
     }
 
@@ -2896,7 +2935,7 @@ const loadCatalogRules = async (area = null, { statusMessage } = {}) => {
     if (statusMessage) {
       setLocationStatus(statusMessage);
     } else if (area?.region && area?.capitalCity) {
-      setLocationStatus(`${area.capitalCity} (${area.region}) - regole standard offline`);
+      setLocationStatus(`${area.capitalCity} (${area.region}) - ${text.locationStandardOfflineSuffix || "regole standard offline"}`);
     } else {
       setLocationStatus("UNI 11686");
     }
@@ -2951,16 +2990,18 @@ const getDevicePosition = async ({ highAccuracy = false } = {}) => {
 };
 
 const mapExpoGeocodeResult = (item = {}) => {
-  const region = normalizeItalianRegion(item.region || item.subregion);
-  const city = item.city || item.district || item.subregion || null;
-
-  return {
-    countryCode: normalizeCountryCode(item.isoCountryCode || item.countryCode || item.country),
-    principalSubdivision: region,
-    capitalCity: resolveCapitalCity(region, city),
-    city,
-    locality: city,
-  };
+  return resolveItalianAreaFromGeocodePayload({
+    countryCode: item.isoCountryCode || item.countryCode || item.country,
+    country: item.country,
+    principalSubdivision: item.region,
+    region: item.region,
+    subregion: item.subregion,
+    county: item.subregion,
+    city: item.city,
+    locality: item.locality,
+    district: item.district,
+    name: item.name,
+  });
 };
 
 const reverseGeocodeCoordinates = async (latitude, longitude) => {
@@ -2970,7 +3011,11 @@ const reverseGeocodeCoordinates = async (latitude, longitude) => {
   });
 
   if (localResults?.[0]) {
-    return mapExpoGeocodeResult(localResults[0]);
+    const localGeo = mapExpoGeocodeResult(localResults[0]);
+    if (localGeo?.outsideItaly || localGeo?.region || localGeo?.principalSubdivision) {
+      return localGeo;
+    }
+    console.log("Reverse geocode dispositivo senza regione italiana riconosciuta, provo backend.");
   }
 
   try {
@@ -2979,7 +3024,10 @@ const reverseGeocodeCoordinates = async (latitude, longitude) => {
       longitude,
       language === "English" ? "en" : "it"
     );
-    if (backendGeo) return backendGeo;
+    const resolvedBackendGeo = resolveItalianAreaFromGeocodePayload(backendGeo);
+    if (resolvedBackendGeo?.outsideItaly || resolvedBackendGeo?.region || resolvedBackendGeo?.principalSubdivision) {
+      return resolvedBackendGeo;
+    }
   } catch (error) {
     console.log("Reverse geocode backend non disponibile:", error.message);
   }
@@ -3024,19 +3072,24 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
       return false;
     }
 
-    setLocationStatus("Localizzazione in corso...");
+    setLocationStatus(text.locationInProgressStatus || "Localizzazione in corso...");
 
     const position = await getDevicePosition({ highAccuracy: requestPermission });
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
-    setLocationStatus("Posizione rilevata: aggiorno regole...");
+    setLocationStatus(text.locationUpdatingRulesStatus || "Posizione rilevata: aggiorno regole...");
 
     const geo = await reverseGeocodeCoordinates(latitude, longitude);
 
     if (!geo) {
       setGeoArea({ latitude, longitude });
       await loadCatalogRules(null, { statusMessage: text.locationRegionUnknownStatus || "Regione non riconosciuta: uso standard UNI 11686" });
+      return false;
+    }
+
+    if (geo.outsideItaly) {
+      await loadNationalLocationRules(text.locationOutsideItalyStatus || "Fuori Italia: uso standard UNI 11686");
       return false;
     }
 
@@ -3059,8 +3112,8 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
     const area = { region, capitalCity, latitude, longitude };
 
     setGeoArea(area);
-    await loadCatalogRules(area);
-    return true;
+    const appliedRules = await loadCatalogRules(area);
+    return Boolean(appliedRules?.localFallback || (appliedRules?.ruleSet && !appliedRules.ruleSet.isDefault));
   } catch (error) {
     console.log("Localizzazione non riuscita:", error.message);
     await loadNationalLocationRules(text.locationUnavailableStatus || "Localizzazione non disponibile: uso standard UNI 11686").catch((fallbackError) =>
@@ -3159,7 +3212,7 @@ const handleLocalizationChange = async (value) => {
   }
 
   setLocalization(true);
-  setLocationStatus("Localizzazione attiva: verifico permesso...");
+  setLocationStatus(text.locationCheckingPermissionStatus || "Localizzazione attiva: verifico permesso...");
 
   const applied = await tryApplyDeviceLocationRules({ requestPermission: true });
   await persistLocationPromptDecision(applied);
@@ -3179,22 +3232,22 @@ const handleAuthSubmit = async (isRegister) => {
   const password = authPassword;
 
   if (!isValidEmail(email)) {
-    setAuthError("Inserisci un indirizzo email valido.");
+    setAuthError(text.authInvalidEmail || "Inserisci un indirizzo email valido.");
     return;
   }
 
   if (isRegister && username.length < 3) {
-    setAuthError("Lo username deve contenere almeno 3 caratteri.");
+    setAuthError(text.authUsernameShort || "Lo username deve contenere almeno 3 caratteri.");
     return;
   }
 
   if (isRegister && password.length < 8) {
-    setAuthError("La password deve contenere almeno 8 caratteri.");
+    setAuthError(text.authPasswordShort || "La password deve contenere almeno 8 caratteri.");
     return;
   }
 
   if (!isRegister && password.length === 0) {
-    setAuthError("Inserisci la password prima di premere Entra.");
+    setAuthError(text.authPasswordRequired || "Inserisci la password prima di premere Entra.");
     return;
   }
 
@@ -3206,7 +3259,7 @@ const handleAuthSubmit = async (isRegister) => {
       });
 
       setAuthPassword("");
-      setAuthSuccess("Registrazione completata. Reinserisci la password e premi Entra.");
+      setAuthSuccess(text.authRegisterCompleteLogin || "Registrazione completata. Reinserisci la password e premi Entra.");
       setScreen("login");
       return;
     }
@@ -3224,11 +3277,11 @@ const handleAuthSubmit = async (isRegister) => {
     const message = error.message || "Operazione non riuscita";
 
     if (message.includes("Email o username")) {
-      setAuthError("Email o username già registrati. Usa Accesso oppure cambia dati.");
+      setAuthError(text.authEmailUsernameTakenLong || "Email o username già registrati. Usa Accesso oppure cambia dati.");
     } else if (message.includes("Credenziali")) {
-      setAuthError("Email o password non corrette. Controlla i dati e riprova.");
+      setAuthError(text.authInvalidCredentialsLong || "Email o password non corrette. Controlla i dati e riprova.");
     } else if (message.includes("Dati non validi")) {
-      setAuthError("Controlla email, username e password: alcuni dati non sono validi.");
+      setAuthError(text.authInvalidData || "Controlla email, username e password: alcuni dati non sono validi.");
     } else {
       setAuthError(message);
     }
@@ -3569,7 +3622,7 @@ const handleWasteSorting = (selectedBinId) => {
   setTreeFeedback({ id: Date.now(), type: "wrong" });
  
   const targetBin = activeBins.find((bin) => bin.id === currentWaste.type) || BINS.find((bin) => bin.id === currentWaste.type);
-  const targetBinLabel = targetBin?.label || text.binLabels?.[currentWaste.type] || "";
+  const targetBinLabel = getBinDisplayLabel(targetBin, language, text);
   const displayedWasteName = getWasteName(currentWaste, language);
   const displayedWasteDescription = getWasteDescription(currentWaste, language);
   const nextLives = lives - 1;
@@ -4434,7 +4487,7 @@ onPanResponderTerminate: (event, gestureState) => {
                         allowFontScaling={false}
                         style={[styles.binLabelOnlyText, { color: "#FFFFFF" }]}
                       >
-                       {bin.label || text.binLabels?.[bin.id]}
+                       {getBinDisplayLabel(bin, language, text)}
                       </Text>
                     </View>
                   </View>

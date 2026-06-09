@@ -66,18 +66,192 @@ const ITALIAN_REGION_ALIASES = {
   "Venetia": "Veneto",
 };
 
+const compactAreaName = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’`]/g, "'")
+    .replace(/^regione\s+/i, "")
+    .replace(/^region\s+of\s+/i, "")
+    .replace(/\b(regione|region|italia|italy)\b/gi, "")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+const REGION_BY_COMPACT_NAME = Object.fromEntries(
+  Object.keys(ITALIAN_REGION_CAPITALS).flatMap((region) => {
+    const compact = compactAreaName(region);
+    const withoutHyphen = compactAreaName(region.replace(/-/g, " "));
+    return [
+      [compact, region],
+      [withoutHyphen, region],
+    ];
+  })
+);
+
+const REGION_ALIAS_BY_COMPACT_NAME = Object.fromEntries(
+  Object.entries(ITALIAN_REGION_ALIASES).map(([alias, region]) => [compactAreaName(alias), region])
+);
+
+const CAPITAL_TO_REGION = Object.fromEntries(
+  Object.entries(ITALIAN_REGION_CAPITALS).map(([region, capitalCity]) => [compactAreaName(capitalCity), region])
+);
+
+const PLACE_TO_REGION_ALIASES = {
+  naples: "Campania",
+  rome: "Lazio",
+  milan: "Lombardia",
+  turin: "Piemonte",
+  florence: "Toscana",
+  venice: "Veneto",
+  bologne: "Emilia-Romagna",
+  bolzano: "Trentino-Alto Adige",
+  bozen: "Trentino-Alto Adige",
+  aquila: "Abruzzo",
+  "l aquila": "Abruzzo",
+  "laquila": "Abruzzo",
+  "citta metropolitana di napoli": "Campania",
+  "metropolitan city of naples": "Campania",
+  "citta metropolitana di roma capitale": "Lazio",
+  "metropolitan city of rome capital": "Lazio",
+  "citta metropolitana di milano": "Lombardia",
+  "metropolitan city of milan": "Lombardia",
+  "citta metropolitana di torino": "Piemonte",
+  "metropolitan city of turin": "Piemonte",
+  "citta metropolitana di venezia": "Veneto",
+  "metropolitan city of venice": "Veneto",
+  "citta metropolitana di firenze": "Toscana",
+  "metropolitan city of florence": "Toscana",
+  "citta metropolitana di bologna": "Emilia-Romagna",
+  "metropolitan city of bologna": "Emilia-Romagna",
+  "citta metropolitana di genova": "Liguria",
+  "metropolitan city of genoa": "Liguria",
+  "citta metropolitana di bari": "Puglia",
+  "metropolitan city of bari": "Puglia",
+  "citta metropolitana di palermo": "Sicilia",
+  "metropolitan city of palermo": "Sicilia",
+  "citta metropolitana di cagliari": "Sardegna",
+  "metropolitan city of cagliari": "Sardegna",
+  "citta metropolitana di messina": "Sicilia",
+  "citta metropolitana di catania": "Sicilia",
+  "citta metropolitana di reggio calabria": "Calabria",
+};
+
+const COUNTRY_ITALY_VALUES = new Set(["it", "ita", "italia", "italy", "italie"]);
+
 export const LOCATION_REQUEST_TIMEOUT_MS = 14000;
 export const LOCATION_LAST_KNOWN_MAX_AGE_MS = 5 * 60 * 1000;
 
 export function normalizeItalianRegion(value) {
-  const clean = String(value || "")
+  const raw = String(value || "");
+  const clean = raw
     .replace(/^Regione\s+/i, "")
     .replace(/[’`]/g, "'")
     .replace(/\s+/g, " ")
     .trim();
 
   if (!clean) return "";
-  return ITALIAN_REGION_ALIASES[clean] || clean;
+  const compact = compactAreaName(clean);
+  return (
+    ITALIAN_REGION_ALIASES[clean] ||
+    REGION_ALIAS_BY_COMPACT_NAME[compact] ||
+    REGION_BY_COMPACT_NAME[compact] ||
+    PLACE_TO_REGION_ALIASES[compact] ||
+    CAPITAL_TO_REGION[compact] ||
+    ""
+  );
+}
+
+export function isKnownItalianRegion(value) {
+  return Boolean(normalizeItalianRegion(value));
+}
+
+function resolveRegionFromPlace(value) {
+  const compact = compactAreaName(value);
+  if (!compact) return "";
+
+  const direct = PLACE_TO_REGION_ALIASES[compact] || CAPITAL_TO_REGION[compact];
+  if (direct) return direct;
+
+  const withoutAdministrativePrefix = compact
+    .replace(/^(citta metropolitana di|metropolitan city of|provincia di|province of|provincia|province)\s+/, "")
+    .trim();
+
+  return (
+    PLACE_TO_REGION_ALIASES[withoutAdministrativePrefix] ||
+    CAPITAL_TO_REGION[withoutAdministrativePrefix] ||
+    ""
+  );
+}
+
+export function resolveItalianRegionFromParts(...parts) {
+  for (const part of parts) {
+    const region = normalizeItalianRegion(part);
+    if (region) return region;
+  }
+
+  for (const part of parts) {
+    const region = resolveRegionFromPlace(part);
+    if (region) return region;
+  }
+
+  return "";
+}
+
+export function resolveItalianCapitalCity(region, preferredCity) {
+  const normalizedRegion = normalizeItalianRegion(region);
+  return preferredCity || ITALIAN_REGION_CAPITALS[normalizedRegion] || "Standard";
+}
+
+function normalizeCountryForArea(value) {
+  const compact = compactAreaName(value);
+  if (!compact) return "";
+  if (COUNTRY_ITALY_VALUES.has(compact)) return "IT";
+  return String(value || "").trim().toUpperCase();
+}
+
+export function resolveItalianAreaFromGeocodePayload(payload = {}) {
+  const countryCode = normalizeCountryForArea(
+    payload.countryCode ||
+      payload.isoCountryCode ||
+      payload.country ||
+      payload.countryName
+  );
+
+  if (countryCode && countryCode !== "IT") {
+    return { outsideItaly: true, countryCode };
+  }
+
+  const city =
+    payload.city ||
+    payload.locality ||
+    payload.district ||
+    payload.municipality ||
+    payload.name ||
+    "";
+  const region = resolveItalianRegionFromParts(
+    payload.principalSubdivision,
+    payload.region,
+    payload.subregion,
+    payload.adminArea,
+    payload.county,
+    payload.localityInfo?.administrative?.[1]?.name,
+    payload.localityInfo?.administrative?.[2]?.name,
+    payload.localityInfo?.administrative?.[3]?.name,
+    city
+  );
+
+  if (!region) return null;
+
+  return {
+    countryCode: "IT",
+    region,
+    principalSubdivision: region,
+    capitalCity: ITALIAN_REGION_CAPITALS[region] || city || "Standard",
+    city: city || ITALIAN_REGION_CAPITALS[region] || null,
+    locality: payload.locality || city || null,
+  };
 }
 
 function normalizeRuleKey(region, capitalCity) {
