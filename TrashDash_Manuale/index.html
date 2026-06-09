@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrashDash - Demo localizzazione manuale</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <h1>TrashDash Manuale</h1>
+        <p>
+          Demo per simulare la richiesta posizione con coordinate inserite a mano. Non usa Expo Location:
+          chiama direttamente il backend e mostra regole locali, cassonetti e rifiuti caricati per regione/capoluogo.
+        </p>
+      </section>
+
+      <section class="grid">
+        <aside class="panel">
+          <h2>Richiesta posizione</h2>
+
+          <label for="apiBase">Backend API base URL</label>
+          <input id="apiBase" value="http://localhost:4000/api" />
+
+          <label for="preset">Preset regione</label>
+          <select id="preset"></select>
+
+          <div class="row">
+            <div>
+              <label for="latitude">Latitudine</label>
+              <input id="latitude" inputmode="decimal" />
+            </div>
+            <div>
+              <label for="longitude">Longitudine</label>
+              <input id="longitude" inputmode="decimal" />
+            </div>
+          </div>
+
+          <button id="requestManualPosition" type="button">Richiedi posizione manuale</button>
+          <button id="reset" class="secondary" type="button">Reset demo</button>
+
+          <div id="status" class="status">Pronta. Inserisci coordinate o scegli un preset.</div>
+        </aside>
+
+        <section class="panel">
+          <h2>Area rilevata</h2>
+          <div id="areaResult" class="cards"></div>
+
+          <h2>Cassonetti attivi</h2>
+          <div id="bins" class="cards"></div>
+        </section>
+      </section>
+
+      <section class="grid">
+        <section class="panel">
+          <h2>Rifiuti caricati</h2>
+          <div id="wastes" class="waste-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Debug risposta</h2>
+          <pre id="raw">{}</pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="manual-geolocation-demo.js"></script>
+  </body>
+</html>
+
