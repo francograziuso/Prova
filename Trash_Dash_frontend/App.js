@@ -210,6 +210,125 @@ const ALBERO_AUTUNNALE_DEFEAT_BETTER_SVG = `
 </svg>
 `;
 
+const SUNFLOWER_DEFEAT_PETALS_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="88" rx="31" ry="6" fill="#111827" opacity="0.34"/>
+  <circle cx="50" cy="43" r="12" fill="#7C2D12"/>
+  <circle cx="50" cy="43" r="7" fill="#92400E"/>
+  <path d="M50 56 C50 66 49 76 47 88" stroke="#365314" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="29" cy="78" rx="10" ry="5" fill="#FACC15" opacity="0.92" transform="rotate(-18 29 78)"/>
+  <ellipse cx="42" cy="84" rx="8" ry="4" fill="#EAB308" opacity="0.85" transform="rotate(20 42 84)"/>
+  <ellipse cx="58" cy="82" rx="9" ry="4.5" fill="#FDE047" opacity="0.9" transform="rotate(-12 58 82)"/>
+  <ellipse cx="72" cy="76" rx="10" ry="5" fill="#F59E0B" opacity="0.82" transform="rotate(16 72 76)"/>
+  <ellipse cx="35" cy="31" rx="7" ry="4" fill="#FACC15" opacity="0.65" transform="rotate(-45 35 31)"/>
+  <ellipse cx="66" cy="28" rx="7" ry="4" fill="#EAB308" opacity="0.55" transform="rotate(36 66 28)"/>
+</svg>
+`;
+
+const LOLLIPOP_DEFEAT_CRACK_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="51" cy="90" rx="28" ry="5" fill="#111827" opacity="0.3"/>
+  <path d="M50 54 L50 88" stroke="#F8FAFC" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="50" cy="34" r="25" fill="#22C55E"/>
+  <path d="M33 31 C42 15 62 16 68 33 C58 27 45 27 33 31Z" fill="#A7F3D0" opacity="0.65"/>
+  <path d="M38 19 C58 15 72 29 67 47 C57 55 40 54 31 43 C28 34 31 25 38 19Z" stroke="#FB7185" stroke-width="6" opacity="0.9"/>
+  <path d="M51 12 L45 29 L55 35 L47 55 L58 42 L53 34 L62 17" stroke="#111827" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25 62 C36 66 63 66 75 61" stroke="#FB7185" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
+</svg>
+`;
+
+const LOTUS_DEFEAT_PETALS_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="88" rx="32" ry="6" fill="#0F172A" opacity="0.34"/>
+  <path d="M25 74 C37 59 47 62 50 81 C39 85 30 83 25 74Z" fill="#F9A8D4" opacity="0.86"/>
+  <path d="M75 74 C63 59 53 62 50 81 C61 85 70 83 75 74Z" fill="#F0ABFC" opacity="0.82"/>
+  <path d="M39 70 C41 51 58 51 61 70 C55 78 45 78 39 70Z" fill="#FBCFE8" opacity="0.74"/>
+  <ellipse cx="31" cy="88" rx="10" ry="4.6" fill="#F9A8D4" opacity="0.8" transform="rotate(-14 31 88)"/>
+  <ellipse cx="49" cy="91" rx="9" ry="4.2" fill="#FBCFE8" opacity="0.75"/>
+  <ellipse cx="67" cy="87" rx="10" ry="4.6" fill="#E879F9" opacity="0.72" transform="rotate(17 67 87)"/>
+</svg>
+`;
+
+const ORCHID_VICTORY_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="90" rx="31" ry="6" fill="#2E1065" opacity="0.32"/>
+  <circle cx="74" cy="23" r="8" fill="#FDE68A" opacity="0.88"/>
+  <path d="M50 58 C50 72 48 81 45 91" stroke="#14532D" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="50" cy="35" rx="13" ry="24" fill="#D946EF"/>
+  <ellipse cx="35" cy="46" rx="12" ry="20" fill="#C084FC" transform="rotate(-45 35 46)"/>
+  <ellipse cx="65" cy="46" rx="12" ry="20" fill="#F472B6" transform="rotate(45 65 46)"/>
+  <ellipse cx="50" cy="55" rx="12" ry="15" fill="#F0ABFC"/>
+  <circle cx="50" cy="47" r="7" fill="#FDE68A"/>
+  <circle cx="27" cy="26" r="2.2" fill="#FFFFFF" opacity="0.85"/>
+  <circle cx="80" cy="48" r="1.8" fill="#FFFFFF" opacity="0.75"/>
+</svg>
+`;
+
+const ORCHID_DEFEAT_MAGENTA_PETALS_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="90" rx="32" ry="6" fill="#111827" opacity="0.34"/>
+  <path d="M51 52 C50 68 49 80 47 91" stroke="#3F3F46" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="37" cy="80" rx="12" ry="5" fill="#D946EF" opacity="0.78" transform="rotate(-20 37 80)"/>
+  <ellipse cx="54" cy="86" rx="11" ry="5" fill="#C026D3" opacity="0.72" transform="rotate(12 54 86)"/>
+  <ellipse cx="69" cy="79" rx="10" ry="4.5" fill="#F472B6" opacity="0.72" transform="rotate(24 69 79)"/>
+  <ellipse cx="44" cy="38" rx="8" ry="14" fill="#A21CAF" opacity="0.46" transform="rotate(-35 44 38)"/>
+  <ellipse cx="60" cy="38" rx="8" ry="14" fill="#BE185D" opacity="0.42" transform="rotate(35 60 38)"/>
+</svg>
+`;
+
+const CORAL_VICTORY_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="90" rx="33" ry="6" fill="#831843" opacity="0.26"/>
+  <path d="M50 86 C50 66 50 48 50 28" stroke="#FB7185" stroke-width="10" stroke-linecap="round"/>
+  <path d="M50 55 C38 48 31 40 27 28" stroke="#F472B6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M51 61 C64 53 72 43 76 30" stroke="#FDA4AF" stroke-width="8" stroke-linecap="round"/>
+  <path d="M50 42 C60 36 65 29 67 20" stroke="#F9A8D4" stroke-width="7" stroke-linecap="round"/>
+  <path d="M43 68 C34 63 28 57 24 48" stroke="#FB7185" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="26" cy="27" r="4" fill="#FDE68A"/>
+  <circle cx="76" cy="29" r="4" fill="#FDE68A"/>
+  <circle cx="67" cy="20" r="3.5" fill="#FDE68A"/>
+  <circle cx="50" cy="27" r="4" fill="#FDE68A"/>
+</svg>
+`;
+
+const CORAL_DEFEAT_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="90" rx="33" ry="6" fill="#111827" opacity="0.34"/>
+  <path d="M50 84 C50 67 50 51 50 35" stroke="#9F7AEA" stroke-width="9" stroke-linecap="round" opacity="0.72"/>
+  <path d="M50 57 C39 52 34 44 30 34" stroke="#7C3AED" stroke-width="7" stroke-linecap="round" opacity="0.62"/>
+  <path d="M51 63 C62 56 68 48 72 39" stroke="#A78BFA" stroke-width="7" stroke-linecap="round" opacity="0.58"/>
+  <path d="M37 78 L31 86 L43 84" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>
+  <path d="M66 78 L74 84 L62 86" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="50" cy="34" r="3.6" fill="#CBD5E1" opacity="0.75"/>
+</svg>
+`;
+
+const CRYSTAL_VICTORY_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="91" rx="34" ry="6" fill="#075985" opacity="0.28"/>
+  <path d="M50 8 L76 36 L65 86 H35 L24 36 Z" fill="#67E8F9"/>
+  <path d="M50 8 L50 86 L24 36 Z" fill="#38BDF8" opacity="0.72"/>
+  <path d="M50 8 L76 36 L50 86 Z" fill="#A78BFA" opacity="0.55"/>
+  <path d="M24 36 H76" stroke="#ECFEFF" stroke-width="3" opacity="0.75"/>
+  <path d="M35 86 L50 36 L65 86" stroke="#FFFFFF" stroke-width="2.5" opacity="0.75"/>
+  <circle cx="25" cy="20" r="2.4" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="78" cy="62" r="2" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="67" cy="18" r="1.8" fill="#FFFFFF" opacity="0.75"/>
+</svg>
+`;
+
+const CRYSTAL_DEFEAT_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <ellipse cx="50" cy="91" rx="34" ry="6" fill="#111827" opacity="0.36"/>
+  <path d="M49 13 L70 38 L61 84 H36 L25 39 Z" fill="#64748B"/>
+  <path d="M49 13 L49 84 L25 39 Z" fill="#475569"/>
+  <path d="M49 13 L70 38 L49 84 Z" fill="#94A3B8" opacity="0.55"/>
+  <path d="M38 25 L52 39 L45 48 L58 61 L51 82" stroke="#111827" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M67 72 L80 82 L63 86" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31 78 L20 86 L36 86" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`;
+
 const createTreeSkinSvg = ({
   leaf = "#22C55E",
   leaf2 = "#86EFAC",
@@ -303,14 +422,13 @@ const EXTRA_TREE_ITEMS = [
   makeTreeSkin({ id: "tree_eucalyptus_rainbow", name: "Eucalipto Arcobaleno", cost: 410, type: "Estetico", iconHealthy: "🌈", iconDead: "🌫️", moodHealthy: "Corteccia Arcobaleno", moodDead: "Colori Lavati", bgHealthy: "rgba(168, 85, 247, 0.2)", bgDead: "#322844", borderColor: "#C084FC", leaf: "#22C55E", leaf2: "#A78BFA", accent: "#F472B6", trunk: "#A855F7", ground: "#4C1D95" }),
   makeTreeSkin({ id: "tree_bamboo_grove", name: "Bosco di Bambù", cost: 430, type: "Estetico", iconHealthy: "🎍", iconDead: "🪾", moodHealthy: "Canne Vivaci", moodDead: "Steli Spezzati", bgHealthy: "rgba(101, 163, 13, 0.22)", bgDead: "#26321F", borderColor: "#84CC16", leaf: "#65A30D", leaf2: "#D9F99D", accent: "#F7FEE7", trunk: "#84CC16", ground: "#3F6212", shape: "bamboo" }),
   makeTreeSkin({ id: "tree_ficus_city", name: "Ficus Urbano", cost: 450, type: "Estetico", iconHealthy: "🏙️", iconDead: "🌁", moodHealthy: "Verde Metropolitano", moodDead: "Smog sulle Foglie", bgHealthy: "rgba(45, 212, 191, 0.2)", bgDead: "#243239", borderColor: "#2DD4BF", leaf: "#0D9488", leaf2: "#5EEAD4", accent: "#F8FAFC", trunk: "#704B32", ground: "#134E4A" }),
-  { id: "flower_sunflower_patch", name: "Girasole Radioso", cost: 160, type: "Estetico", iconHealthy: "🌻", iconDead: "🥀", moodHealthy: "Sole Aperto", moodDead: "Petali Spenti", bgHealthy: "rgba(250, 204, 21, 0.22)", bgDead: "#3B2F18", borderColor: "#FACC15" },
-  { id: "candy_tree", name: "Leccalecca Verde", cost: 180, type: "Estetico", iconHealthy: "🍭", iconDead: "🍬", moodHealthy: "Dolce Vivace", moodDead: "Zucchero Crepato", bgHealthy: "rgba(251, 113, 133, 0.2)", bgDead: "#3B2431", borderColor: "#FB7185" },
-  { id: "flower_lotus_pond", name: "Fiore di Loto", cost: 240, type: "Estetico", iconHealthy: "🪷", iconDead: "🥀", moodHealthy: "Loto Sereno", moodDead: "Loto Chiuso", bgHealthy: "rgba(45, 212, 191, 0.2)", bgDead: "#1E3440", borderColor: "#2DD4BF" },
-  { id: "mushroom_garden", name: "Fungo Smeraldo", cost: 260, type: "Estetico", iconHealthy: "🍄", iconDead: "🍂", moodHealthy: "Cappello Vivo", moodDead: "Spore Stanche", bgHealthy: "rgba(34, 197, 94, 0.2)", bgDead: "#2D2A20", borderColor: "#86EFAC" },
-  { id: "leaf_crystal_veil", name: "Foglia Cristallina", cost: 300, type: "Estetico", iconHealthy: "🍃", iconDead: "🍂", moodHealthy: "Nervature Lucenti", moodDead: "Foglia Opaca", bgHealthy: "rgba(125, 211, 252, 0.2)", bgDead: "#263241", borderColor: "#7DD3FC" },
-  { id: "flower_nebula", name: "Orchidea Lunare", cost: 520, type: "Estetico", iconHealthy: "🌺", iconDead: "🥀", moodHealthy: "Fioritura Lunare", moodDead: "Orchidea Spenta", bgHealthy: "rgba(168, 85, 247, 0.2)", bgDead: "#27213A", borderColor: "#C084FC" },
-  { id: "coral_garden", name: "Corallo Regale", cost: 760, type: "Estetico", iconHealthy: "🪸", iconDead: "🪨", moodHealthy: "Ramo Corallino", moodDead: "Corallo Pallido", bgHealthy: "rgba(244, 114, 182, 0.2)", bgDead: "#3A2731", borderColor: "#F472B6" },
-  { id: "crystal_bloom", name: "Cristallo Prisma", cost: 980, type: "Estetico", iconHealthy: "💎", iconDead: "🪨", moodHealthy: "Taglio Prismatico", moodDead: "Scheggia Opaca", bgHealthy: "rgba(14, 165, 233, 0.22)", bgDead: "#202C38", borderColor: "#38BDF8" },
+  { id: "flower_sunflower_patch", name: "Girasole Radioso", cost: 160, type: "Estetico", iconHealthy: "🌻", iconDead: "🌼", moodHealthy: "Sole Aperto", moodDead: "Petali Spenti", bgHealthy: "rgba(250, 204, 21, 0.22)", bgDead: "#3B2F18", borderColor: "#FACC15", defeatSvg: SUNFLOWER_DEFEAT_PETALS_SVG },
+  { id: "candy_tree", name: "Leccalecca Verde", cost: 180, type: "Estetico", iconHealthy: "🍭", iconDead: "🍬", moodHealthy: "Dolce Vivace", moodDead: "Zucchero Crepato", bgHealthy: "rgba(251, 113, 133, 0.2)", bgDead: "#3B2431", borderColor: "#FB7185", defeatSvg: LOLLIPOP_DEFEAT_CRACK_SVG },
+  { id: "flower_lotus_pond", name: "Fiore di Loto", cost: 240, type: "Estetico", iconHealthy: "🪷", iconDead: "🌸", moodHealthy: "Loto Sereno", moodDead: "Petali di Loto", bgHealthy: "rgba(45, 212, 191, 0.2)", bgDead: "#1E3440", borderColor: "#2DD4BF", defeatSvg: LOTUS_DEFEAT_PETALS_SVG },
+  { id: "leaf_crystal_veil", name: "Foglia Cristallina", cost: 40, type: "Estetico", iconHealthy: "🍃", iconDead: "🍂", moodHealthy: "Nervature Lucenti", moodDead: "Foglia Opaca", bgHealthy: "rgba(125, 211, 252, 0.2)", bgDead: "#263241", borderColor: "#7DD3FC" },
+  { id: "flower_nebula", name: "Orchidea Lunare", cost: 520, type: "Estetico", iconHealthy: "🌺", iconDead: "🌸", moodHealthy: "Fioritura Lunare", moodDead: "Petali Magenta", bgHealthy: "rgba(168, 85, 247, 0.2)", bgDead: "#27213A", borderColor: "#C084FC", victorySvg: ORCHID_VICTORY_SVG, defeatSvg: ORCHID_DEFEAT_MAGENTA_PETALS_SVG },
+  { id: "coral_garden", name: "Corallo Regale", cost: 760, type: "Estetico", iconHealthy: "🪸", iconDead: "🪨", moodHealthy: "Ramo Corallino", moodDead: "Corallo Pallido", bgHealthy: "rgba(244, 114, 182, 0.2)", bgDead: "#3A2731", borderColor: "#F472B6", victorySvg: CORAL_VICTORY_SVG, defeatSvg: CORAL_DEFEAT_SVG },
+  { id: "crystal_bloom", name: "Cristallo Prisma", cost: 980, type: "Estetico", iconHealthy: "💎", iconDead: "🪨", moodHealthy: "Taglio Prismatico", moodDead: "Scheggia Opaca", bgHealthy: "rgba(14, 165, 233, 0.22)", bgDead: "#202C38", borderColor: "#38BDF8", victorySvg: CRYSTAL_VICTORY_SVG, defeatSvg: CRYSTAL_DEFEAT_SVG },
 ];
  
 const INITIAL_SHOP_ITEMS = [
@@ -337,8 +455,8 @@ const INITIAL_SHOP_ITEMS = [
   },
   {
     id: "tree_sakura",
-    name: "Giardino Fiorito",
-    cost: 50,
+    name: "Bosco Fiorito",
+    cost: 120,
     type: "Estetico",
     iconHealthy: "🌸",
     iconDead: "🌸",
@@ -359,7 +477,7 @@ const INITIAL_SHOP_ITEMS = [
   {
     id: "tree_autumn",
     name: "Bosco Autunnale",
-    cost: 80,
+    cost: 140,
     type: "Estetico",
     iconHealthy: "🍁",
     iconDead: "🍁",
@@ -377,27 +495,10 @@ const INITIAL_SHOP_ITEMS = [
     }),
     bought: false,
   },
-    {
-    id: "tree_sakura_svg",
-    name: "Viale Sakura",
-    cost: 120,
-    type: "Estetico",
-    iconHealthy: "🌸",
-    iconDead: "🥀",
-    moodHealthy: "Sakura Rigoglioso",
-    moodDead: "Sakura Appassito",
-    bgHealthy: "rgba(244, 114, 182, 0.25)",
-    bgDead: "#4A2633",
-    borderColor: "#F472B6",
-   baseSvgAsset: require("./albero-di-sakura-base.svg"),
-victorySvgAsset: require("./albero-di-sakura-victory.svg"),
-defeatSvg: ALBERO_SAKURA_DEFEAT_BETTER_SVG,
-    bought: false,
-  },
   {
     id: "tree_autumn_svg",
     name: "Albero Autunnale",
-    cost: 140,
+    cost: 80,
     type: "Estetico",
     iconHealthy: "🍁",
     iconDead: "🍂",
@@ -1643,6 +1744,10 @@ function TreeComponent({ errors, activeTree, language, performanceMode = false, 
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const isDead = errors >= 2;
+  const hasPremiumCosmeticEffect = Number(activeTree?.cost || 0) >= 270;
+  const isTopTierCosmetic = ["flower_nebula", "coral_garden", "crystal_bloom"].includes(activeTree?.id);
+  const premiumStroke = isDead ? "#94A3B8" : activeTree?.borderColor || "#FDE68A";
+  const premiumAccent = isDead ? "#64748B" : activeTree?.accent || "#FDE68A";
 
   const ambientConfigs = useRef(
     Array.from({ length: performanceMode ? 0 : 10 }, (_, index) => ({
@@ -1847,6 +1952,34 @@ function TreeComponent({ errors, activeTree, language, performanceMode = false, 
           },
         ]}
       />
+
+      {hasPremiumCosmeticEffect && (
+        <Svg style={StyleSheet.absoluteFillObject} viewBox="0 0 360 138" preserveAspectRatio="none" pointerEvents="none">
+          <Path
+            d="M18 33 C74 10 123 45 170 24 C221 1 274 34 340 14"
+            stroke={premiumStroke}
+            strokeWidth={isTopTierCosmetic ? "2.8" : "2"}
+            opacity={isDead ? "0.14" : isTopTierCosmetic ? "0.38" : "0.26"}
+            fill="none"
+          />
+          <Path
+            d="M30 111 C88 88 126 116 178 98 C233 78 286 106 330 82"
+            stroke={premiumAccent}
+            strokeWidth={isTopTierCosmetic ? "2.4" : "1.8"}
+            opacity={isDead ? "0.12" : isTopTierCosmetic ? "0.3" : "0.2"}
+            fill="none"
+          />
+          <Circle cx="78" cy="32" r={isTopTierCosmetic ? "3.4" : "2.4"} fill={premiumAccent} opacity={isDead ? "0.28" : "0.72"} />
+          <Circle cx="286" cy="38" r={isTopTierCosmetic ? "3.2" : "2.2"} fill="#FFFFFF" opacity={isDead ? "0.2" : "0.58"} />
+          <Circle cx="303" cy="96" r={isTopTierCosmetic ? "3" : "2"} fill={premiumStroke} opacity={isDead ? "0.24" : "0.58"} />
+          {isTopTierCosmetic && (
+            <>
+              <Circle cx="139" cy="23" r="2.4" fill="#FFFFFF" opacity={isDead ? "0.18" : "0.62"} />
+              <Circle cx="218" cy="108" r="2.6" fill={premiumAccent} opacity={isDead ? "0.18" : "0.54"} />
+            </>
+          )}
+        </Svg>
+      )}
 
       {!performanceMode && (
         <View pointerEvents="none" style={styles.cinTreeParticleLayer}>

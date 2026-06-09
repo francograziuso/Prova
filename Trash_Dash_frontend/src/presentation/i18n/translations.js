@@ -572,7 +572,7 @@ const SHOP_TRANSLATIONS_EN = {
     moodDead: "Classic Leaf Loss",
   },
   tree_sakura: {
-    name: "Flower Garden",
+    name: "Flowering Grove",
     moodHealthy: "Blooming Sakura",
     moodDead: "Falling Pink Petals",
   },
@@ -580,11 +580,6 @@ const SHOP_TRANSLATIONS_EN = {
     name: "Autumn Park",
     moodHealthy: "Golden Crown",
     moodDead: "Falling Autumn Leaves",
-  },
-  tree_sakura_svg: {
-    name: "Sakura Avenue",
-    moodHealthy: "Flourishing Sakura",
-    moodDead: "Withered Sakura",
   },
   tree_autumn_svg: {
     name: "Autumn Tree",
@@ -608,10 +603,9 @@ const SHOP_TRANSLATIONS_EN = {
   tree_ficus_city: { name: "Urban Ficus", moodHealthy: "Metropolitan Green", moodDead: "Smog on Leaves" },
   flower_sunflower_patch: { name: "Radiant Sunflower", moodHealthy: "Open Sun", moodDead: "Dim Petals" },
   candy_tree: { name: "Green Lollipop", moodHealthy: "Lively Sweetness", moodDead: "Cracked Sugar" },
-  flower_lotus_pond: { name: "Lotus Flower", moodHealthy: "Serene Lotus", moodDead: "Closed Lotus" },
-  mushroom_garden: { name: "Emerald Mushroom", moodHealthy: "Living Cap", moodDead: "Tired Spores" },
+  flower_lotus_pond: { name: "Lotus Flower", moodHealthy: "Serene Lotus", moodDead: "Lotus Petals" },
   leaf_crystal_veil: { name: "Crystal Leaf", moodHealthy: "Shining Veins", moodDead: "Dull Leaf" },
-  flower_nebula: { name: "Moon Orchid", moodHealthy: "Moon Bloom", moodDead: "Dim Orchid" },
+  flower_nebula: { name: "Moon Orchid", moodHealthy: "Moon Bloom", moodDead: "Magenta Petals" },
   coral_garden: { name: "Royal Coral", moodHealthy: "Coral Branch", moodDead: "Pale Coral" },
   crystal_bloom: { name: "Prism Crystal", moodHealthy: "Prismatic Cut", moodDead: "Dull Shard" },
 };

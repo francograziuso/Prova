@@ -547,10 +547,10 @@ const WASTES: readonly [BinCode, string, string, string, Difficulty][] = [
 
 const ITEMS = [
   { id: "tree_green", name: "Parco Urbano", type: "Estetico", cost: 0, iconHealthy: "🌳", iconDead: "🪾" },
-  { id: "tree_sakura", name: "Giardino Fiorito", type: "Estetico", cost: 50, iconHealthy: "🌸", iconDead: "🌸" },
-  { id: "tree_autumn", name: "Bosco Autunnale", type: "Estetico", cost: 80, iconHealthy: "🍁", iconDead: "🍁" },
-  { id: "tree_sakura_svg", name: "Viale Sakura", type: "Estetico", cost: 120, iconHealthy: "🌸", iconDead: "🥀" },
-  { id: "tree_autumn_svg", name: "Albero Autunnale", type: "Estetico", cost: 140, iconHealthy: "🍁", iconDead: "🍂" },
+  { id: "leaf_crystal_veil", name: "Foglia Cristallina", type: "Estetico", cost: 40, iconHealthy: "🍃", iconDead: "🍂" },
+  { id: "tree_autumn_svg", name: "Albero Autunnale", type: "Estetico", cost: 80, iconHealthy: "🍁", iconDead: "🍂" },
+  { id: "tree_sakura", name: "Bosco Fiorito", type: "Estetico", cost: 120, iconHealthy: "🌸", iconDead: "🌸" },
+  { id: "tree_autumn", name: "Bosco Autunnale", type: "Estetico", cost: 140, iconHealthy: "🍁", iconDead: "🍁" },
   { id: "tree_pine_alpine", name: "Pino Alpino", type: "Estetico", cost: 170, iconHealthy: "🌲", iconDead: "🪵" },
   { id: "tree_olive_mediterranean", name: "Ulivo Mediterraneo", type: "Estetico", cost: 190, iconHealthy: "🫒", iconDead: "🍂" },
   { id: "tree_bonsai_zen", name: "Bonsai Zen", type: "Estetico", cost: 210, iconHealthy: "🎍", iconDead: "🪾" },
@@ -566,12 +566,10 @@ const ITEMS = [
   { id: "tree_eucalyptus_rainbow", name: "Eucalipto Arcobaleno", type: "Estetico", cost: 410, iconHealthy: "🌈", iconDead: "🌫️" },
   { id: "tree_bamboo_grove", name: "Bosco di Bambù", type: "Estetico", cost: 430, iconHealthy: "🎍", iconDead: "🪾" },
   { id: "tree_ficus_city", name: "Ficus Urbano", type: "Estetico", cost: 450, iconHealthy: "🏙️", iconDead: "🌁" },
-  { id: "flower_sunflower_patch", name: "Girasole Radioso", type: "Estetico", cost: 160, iconHealthy: "🌻", iconDead: "🥀" },
+  { id: "flower_sunflower_patch", name: "Girasole Radioso", type: "Estetico", cost: 160, iconHealthy: "🌻", iconDead: "🌼" },
   { id: "candy_tree", name: "Leccalecca Verde", type: "Estetico", cost: 180, iconHealthy: "🍭", iconDead: "🍬" },
-  { id: "flower_lotus_pond", name: "Fiore di Loto", type: "Estetico", cost: 240, iconHealthy: "🪷", iconDead: "🥀" },
-  { id: "mushroom_garden", name: "Fungo Smeraldo", type: "Estetico", cost: 260, iconHealthy: "🍄", iconDead: "🍂" },
-  { id: "leaf_crystal_veil", name: "Foglia Cristallina", type: "Estetico", cost: 300, iconHealthy: "🍃", iconDead: "🍂" },
-  { id: "flower_nebula", name: "Orchidea Lunare", type: "Estetico", cost: 520, iconHealthy: "🌺", iconDead: "🥀" },
+  { id: "flower_lotus_pond", name: "Fiore di Loto", type: "Estetico", cost: 240, iconHealthy: "🪷", iconDead: "🌸" },
+  { id: "flower_nebula", name: "Orchidea Lunare", type: "Estetico", cost: 520, iconHealthy: "🌺", iconDead: "🌸" },
   { id: "coral_garden", name: "Corallo Regale", type: "Estetico", cost: 760, iconHealthy: "🪸", iconDead: "🪨" },
   { id: "crystal_bloom", name: "Cristallo Prisma", type: "Estetico", cost: 980, iconHealthy: "💎", iconDead: "🪨" }
 ];

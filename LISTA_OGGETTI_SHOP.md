@@ -5,10 +5,10 @@ Ogni oggetto e' di tipo `Estetico`. `Icona vittoria/base` viene mostrata quando 
 | ID | Nome | Costo | Icona vittoria/base | Icona sconfitta | Stato vittoria/base | Stato sconfitta |
 | --- | --- | ---: | --- | --- | --- | --- |
 | `tree_green` | Parco Urbano | 0 | 🌳 | 🪾 | Albero Rigoglioso | Perdita Foglie Classiche |
-| `tree_sakura` | Giardino Fiorito | 50 | 🌸 | 🌸 | Sakura in Fiore | Perdita Petali Rosa |
-| `tree_autumn` | Bosco Autunnale | 80 | 🍁 | 🍁 | Chioma Dorata | Perdita Foglie Autunnali |
-| `tree_sakura_svg` | Viale Sakura | 120 | 🌸 | 🥀 | Sakura Rigoglioso | Sakura Appassito |
-| `tree_autumn_svg` | Albero Autunnale | 140 | 🍁 | 🍂 | Chioma Autunnale | Rami Secchi Autunnali |
+| `leaf_crystal_veil` | Foglia Cristallina | 40 | 🍃 | 🍂 | Nervature Lucenti | Foglia Opaca |
+| `tree_autumn_svg` | Albero Autunnale | 80 | 🍁 | 🍂 | Chioma Autunnale | Rami Secchi Autunnali |
+| `tree_sakura` | Bosco Fiorito | 120 | 🌸 | 🌸 | Sakura in Fiore | Perdita Petali Rosa |
+| `tree_autumn` | Bosco Autunnale | 140 | 🍁 | 🍁 | Chioma Dorata | Perdita Foglie Autunnali |
 | `tree_pine_alpine` | Pino Alpino | 170 | 🌲 | 🪵 | Pino Cristallino | Aghi Spenti |
 | `tree_olive_mediterranean` | Ulivo Mediterraneo | 190 | 🫒 | 🍂 | Argento Mediterraneo | Rami Assetati |
 | `tree_bonsai_zen` | Bonsai Zen | 210 | 🎍 | 🪾 | Equilibrio Zen | Vaso Crepato |
@@ -24,12 +24,10 @@ Ogni oggetto e' di tipo `Estetico`. `Icona vittoria/base` viene mostrata quando 
 | `tree_eucalyptus_rainbow` | Eucalipto Arcobaleno | 410 | 🌈 | 🌫️ | Corteccia Arcobaleno | Colori Lavati |
 | `tree_bamboo_grove` | Bosco di Bambù | 430 | 🎍 | 🪾 | Canne Vivaci | Steli Spezzati |
 | `tree_ficus_city` | Ficus Urbano | 450 | 🏙️ | 🌁 | Verde Metropolitano | Smog sulle Foglie |
-| `flower_sunflower_patch` | Girasole Radioso | 160 | 🌻 | 🥀 | Sole Aperto | Petali Spenti |
+| `flower_sunflower_patch` | Girasole Radioso | 160 | 🌻 | 🌼 | Sole Aperto | Petali Spenti |
 | `candy_tree` | Leccalecca Verde | 180 | 🍭 | 🍬 | Dolce Vivace | Zucchero Crepato |
-| `flower_lotus_pond` | Fiore di Loto | 240 | 🪷 | 🥀 | Loto Sereno | Loto Chiuso |
-| `mushroom_garden` | Fungo Smeraldo | 260 | 🍄 | 🍂 | Cappello Vivo | Spore Stanche |
-| `leaf_crystal_veil` | Foglia Cristallina | 300 | 🍃 | 🍂 | Nervature Lucenti | Foglia Opaca |
-| `flower_nebula` | Orchidea Lunare | 520 | 🌺 | 🥀 | Fioritura Lunare | Orchidea Spenta |
+| `flower_lotus_pond` | Fiore di Loto | 240 | 🪷 | 🌸 | Loto Sereno | Petali di Loto |
+| `flower_nebula` | Orchidea Lunare | 520 | 🌺 | 🌸 | Fioritura Lunare | Petali Magenta |
 | `coral_garden` | Corallo Regale | 760 | 🪸 | 🪨 | Ramo Corallino | Corallo Pallido |
 | `crystal_bloom` | Cristallo Prisma | 980 | 💎 | 🪨 | Taglio Prismatico | Scheggia Opaca |
 
