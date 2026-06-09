@@ -7,6 +7,7 @@ import { createLobbyUseCases } from "../src/application/use-cases/lobbies/lobbyU
 import { createShopUseCases } from "../src/application/use-cases/shop/shopUseCases";
 import type { GeolocationProvider } from "../src/application/ports/GeolocationProvider";
 import type { PasswordHasher, TokenService } from "../src/application/ports/SecurityPorts";
+import type { TransactionalRepositories, TransactionManager } from "../src/application/ports/TransactionManager";
 import type { Difficulty, GameRecord, GameSubmitInput, LobbyStatus, PublicLeaderboardUser, SettingsInput, ShopItem, UserProfile } from "../src/domain/entities/types";
 import type { GameRepository } from "../src/domain/repositories/GameRepository";
 import type { LeaderboardRepository } from "../src/domain/repositories/LeaderboardRepository";
@@ -74,6 +75,34 @@ class InMemoryUserRepository implements UserRepository {
   }
 }
 
+class FailingStatsUserRepository implements UserRepository {
+  constructor(private readonly delegate: UserRepository) {}
+
+  findByEmailOrUsername(email: string, username: string) {
+    return this.delegate.findByEmailOrUsername(email, username);
+  }
+
+  findByEmailWithPassword(email: string) {
+    return this.delegate.findByEmailWithPassword(email);
+  }
+
+  createRegisteredUser(input: { username: string; email: string; passwordHash: string }) {
+    return this.delegate.createRegisteredUser(input);
+  }
+
+  findProfileById(userId: number) {
+    return this.delegate.findProfileById(userId);
+  }
+
+  updateSettings(userId: number, input: SettingsInput) {
+    return this.delegate.updateSettings(userId, input);
+  }
+
+  async incrementStats() {
+    throw new Error("stats write failed");
+  }
+}
+
 class InMemoryGameRepository implements GameRepository {
   public created: GameRecord[] = [];
 
@@ -99,6 +128,23 @@ class InMemoryGameRepository implements GameRepository {
 
   async findRecentByUserId(_userId: number, _limit: number) {
     return this.created;
+  }
+}
+
+class GameRollbackTransactionManager implements TransactionManager {
+  constructor(private readonly committedGames: InMemoryGameRepository, private readonly users: UserRepository) {}
+
+  async run<T>(work: (repositories: TransactionalRepositories) => Promise<T>): Promise<T> {
+    const stagedGames = new InMemoryGameRepository();
+    const result = await work({
+      games: stagedGames,
+      users: this.users,
+      lobbies: {} as LobbyRepository,
+      shop: {} as ShopRepository
+    });
+
+    this.committedGames.created.push(...stagedGames.created);
+    return result;
   }
 }
 
@@ -341,6 +387,27 @@ async function testGameUseCases() {
     errors: []
   });
   assert.equal(guestSubmitted.user, null);
+
+  const rollbackGames = new InMemoryGameRepository();
+  const rollbackUseCases = createGameUseCases(
+    rollbackGames,
+    users,
+    new GameRollbackTransactionManager(rollbackGames, new FailingStatsUserRepository(users))
+  );
+
+  await assert.rejects(
+    () =>
+      rollbackUseCases.submit({
+        userId: registered.user.id,
+        mode: "SINGLE",
+        difficulty: "Medio",
+        score: 123,
+        status: "WIN",
+        errors: []
+      }),
+    /stats write failed/
+  );
+  assert.equal(rollbackGames.created.length, 0);
 }
 
 async function testLeaderboardUseCases() {
@@ -376,10 +443,14 @@ async function testShopUseCases() {
   const duplicateBuy = await shop.buy(7, "tree_moon");
   assert.equal(duplicateBuy.user?.coins, 50);
 
+  await assert.rejects(() => shop.buy(7, "missing_item"), /Item non trovato/);
+
   await assert.rejects(() => shop.buy(7, "tree_prism"), /Monete insufficienti/);
 
   const equipped = await shop.equip(7, "tree_moon");
   assert.equal((equipped.user?.settings as { equippedItemId?: string })?.equippedItemId, "tree_moon");
+
+  await assert.rejects(() => shop.equip(7, "tree_prism"), /Prima devi acquistare/);
 
   await assert.rejects(() => shop.equip(7, "missing_item"), /Prima devi acquistare/);
 }
@@ -403,6 +474,19 @@ async function testLobbyUseCases() {
   const finalResult = await lobbies.finish({ code: created.code, userId: 2, score: 42 }) as MemoryLobby;
   assert.equal(finalResult.status, "FINISHED");
   assert.equal(finalResult.winnerId, null);
+
+  const second = await lobbies.create({ hostId: 4, difficulty: "Difficile" }) as MemoryLobby;
+  await lobbies.join({ code: second.code, userId: 5 });
+  const secondHostResult = await lobbies.finish({ code: second.code, userId: 4, score: 12 }) as MemoryLobby;
+  assert.equal(secondHostResult.hostScore, 12);
+
+  const secondFinalResult = await lobbies.finish({ code: second.code, userId: 5, score: 40 }) as MemoryLobby;
+  assert.equal(secondFinalResult.status, "FINISHED");
+  assert.equal(secondFinalResult.winnerId, 5);
+
+  const immutableFinalResult = await lobbies.finish({ code: second.code, userId: 4, score: 99 }) as MemoryLobby;
+  assert.equal(immutableFinalResult.hostScore, 12);
+  assert.equal(immutableFinalResult.winnerId, 5);
 }
 
 async function testGeolocationUseCases() {
