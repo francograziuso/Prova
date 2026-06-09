@@ -52,6 +52,7 @@ import {
   LOCATION_LAST_KNOWN_MAX_AGE_MS,
   LOCATION_REQUEST_TIMEOUT_MS,
   buildWastePoolsForBins,
+  decorateBinsForLocalRules,
   groupCatalogWastesByDifficulty,
   getLocalRuleFallback,
   normalizeItalianRegion,
