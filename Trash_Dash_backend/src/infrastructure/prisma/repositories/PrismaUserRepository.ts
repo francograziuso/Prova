@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import type { SettingsInput, UserProfile } from "../../../domain/entities/types";
+import { DomainError } from "../../../domain/errors/DomainError";
 import type { UserRepository } from "../../../domain/repositories/UserRepository";
 import { toUserProfile, toUserSettings } from "../mappers/userMapper";
 import type { PrismaClientLike } from "../PrismaClientLike";
@@ -24,19 +26,26 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async createRegisteredUser(input: { username: string; email: string; passwordHash: string }) {
-    const user = await this.prisma.user.create({
-      data: {
-        username: input.username,
-        email: input.email,
-        passwordHash: input.passwordHash,
-        coins: 0,
-        totalScore: 0,
-        settings: { create: { localization: false, locationPromptSeen: false } },
-        purchases: { create: { itemId: "tree_green" } }
-      },
-      include: profileInclude
-    });
-    return toUserProfile(user);
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          username: input.username,
+          email: input.email,
+          passwordHash: input.passwordHash,
+          coins: 0,
+          totalScore: 0,
+          settings: { create: { localization: false, locationPromptSeen: false } },
+          purchases: { create: { itemId: "tree_green" } }
+        },
+        include: profileInclude
+      });
+      return toUserProfile(user);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new DomainError(409, "Email o username già registrato");
+      }
+      throw error;
+    }
   }
 
   async findProfileById(userId: number) {
@@ -57,14 +66,20 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async incrementStats(userId: number, input: { coins: number; score: number }) {
-    const user = await this.prisma.user.update({
+    const updated = await this.prisma.user.updateMany({
       where: { id: userId },
       data: {
         coins: { increment: input.coins },
         totalScore: { increment: input.score }
-      },
-      include: profileInclude
+      }
     });
-    return toUserProfile(user);
+
+    if (updated.count !== 1) {
+      throw new DomainError(404, "Utente non trovato");
+    }
+
+    const user = await this.findProfileById(userId);
+    if (!user) throw new DomainError(404, "Utente non trovato");
+    return user;
   }
 }

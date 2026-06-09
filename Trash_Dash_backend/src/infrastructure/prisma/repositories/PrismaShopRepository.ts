@@ -6,6 +6,10 @@ import type { PrismaClientLike } from "../PrismaClientLike";
 
 const profileInclude = { settings: true, purchases: true } as const;
 
+function isKnownPrismaError(error: unknown, code: string) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === code;
+}
+
 export class PrismaShopRepository implements ShopRepository {
   constructor(private readonly prisma: PrismaClientLike) {}
 
@@ -35,8 +39,11 @@ export class PrismaShopRepository implements ShopRepository {
         data: { userId: input.userId, itemId: input.itemId }
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      if (isKnownPrismaError(error, "P2002")) {
         return { status: "already-owned", user: await this.findUserProfile(input.userId) };
+      }
+      if (isKnownPrismaError(error, "P2003")) {
+        throw new DomainError(404, "Utente o item non trovato");
       }
       throw error;
     }
@@ -62,11 +69,18 @@ export class PrismaShopRepository implements ShopRepository {
 
     if (!purchase) return null;
 
-    await this.prisma.setting.upsert({
-      where: { userId: input.userId },
-      update: { equippedItemId: input.itemId },
-      create: { userId: input.userId, equippedItemId: input.itemId }
-    });
+    try {
+      await this.prisma.setting.upsert({
+        where: { userId: input.userId },
+        update: { equippedItemId: input.itemId },
+        create: { userId: input.userId, equippedItemId: input.itemId }
+      });
+    } catch (error) {
+      if (isKnownPrismaError(error, "P2003")) {
+        throw new DomainError(404, "Utente o item non trovato");
+      }
+      throw error;
+    }
 
     return this.findUserProfile(input.userId);
   }

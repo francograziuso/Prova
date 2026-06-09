@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import type { Difficulty } from "../../../domain/entities/types";
+import { DomainError } from "../../../domain/errors/DomainError";
 import type { LobbyRepository } from "../../../domain/repositories/LobbyRepository";
 import { determineBattleWinner } from "../../../domain/value-objects/gameResult";
 import type { PrismaClientLike } from "../PrismaClientLike";
@@ -20,11 +22,21 @@ export class PrismaLobbyRepository implements LobbyRepository {
     return Boolean(lobby);
   }
 
-  create(input: { code: string; hostId: number; difficulty: Difficulty; expiresAt: Date }) {
-    return this.prisma.lobby.create({
-      data: input,
-      include: lobbyInclude
-    });
+  async create(input: { code: string; hostId: number; difficulty: Difficulty; expiresAt: Date }) {
+    try {
+      return await this.prisma.lobby.create({
+        data: input,
+        include: lobbyInclude
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new DomainError(409, "Codice lobby già in uso");
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new DomainError(404, "Utente host non trovato");
+      }
+      throw error;
+    }
   }
 
   markExpired(code: string) {
@@ -72,20 +84,24 @@ export class PrismaLobbyRepository implements LobbyRepository {
   }
 
   async recordScoreAndMaybeFinish(input: { code: string; userId: number; score: number }) {
-    const lobby = await this.prisma.lobby.findUnique({ where: { code: input.code } });
-    if (!lobby) return null;
+    const hostUpdate = await this.prisma.lobby.updateMany({
+      where: {
+        code: input.code,
+        status: "IN_PROGRESS",
+        hostId: input.userId,
+        hostScore: null
+      },
+      data: { hostScore: input.score }
+    });
 
-    if (lobby.status === "FINISHED") return this.findByCode(input.code);
-    if (lobby.status !== "IN_PROGRESS") return this.findByCode(input.code);
-
-    if (input.userId === lobby.hostId) {
+    if (hostUpdate.count !== 1) {
       await this.prisma.lobby.updateMany({
-        where: { code: input.code, hostScore: null },
-        data: { hostScore: input.score }
-      });
-    } else if (input.userId === lobby.guestId) {
-      await this.prisma.lobby.updateMany({
-        where: { code: input.code, guestScore: null },
+        where: {
+          code: input.code,
+          status: "IN_PROGRESS",
+          guestId: input.userId,
+          guestScore: null
+        },
         data: { guestScore: input.score }
       });
     }
