@@ -1,4 +1,9 @@
-import type { UserProfile } from "../../../domain/entities/types";
+import type { UserProfile, UserPurchase, UserSettings } from "../../../domain/entities/types";
+
+type RawSettings = Omit<UserSettings, "language"> & {
+  language: string;
+  userId?: number;
+};
 
 type ProfileLike = {
   id: number;
@@ -6,9 +11,20 @@ type ProfileLike = {
   email: string;
   coins: number;
   totalScore: number;
-  settings?: unknown;
-  purchases?: unknown[];
+  settings?: RawSettings | UserSettings | null;
+  purchases?: UserPurchase[];
 };
+
+export function toUserSettings(settings: RawSettings | UserSettings): UserSettings {
+  return {
+    music: settings.music,
+    sfx: settings.sfx,
+    localization: settings.localization,
+    locationPromptSeen: settings.locationPromptSeen,
+    language: settings.language === "EN" ? "EN" : "IT",
+    equippedItemId: settings.equippedItemId
+  };
+}
 
 export function toUserProfile(user: ProfileLike): UserProfile {
   return {
@@ -17,7 +33,7 @@ export function toUserProfile(user: ProfileLike): UserProfile {
     email: user.email,
     coins: user.coins,
     totalScore: user.totalScore,
-    settings: user.settings ?? null,
+    settings: user.settings ? toUserSettings(user.settings) : null,
     purchases: user.purchases ?? []
   };
 }

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { container } from "../../../main/container";
 import { optionalAuth, requireAuth } from "../middleware/auth";
+import type { GameErrorReport } from "../../../domain/entities/types";
 
 export const gamesRouter = Router();
 
@@ -20,7 +21,8 @@ const submitSchema = z.object({
 gamesRouter.post("/submit", optionalAuth, async (req, res, next) => {
   try {
     const input = submitSchema.parse(req.body);
-    const result = await container.games.submit({ ...input, errors: input.errors ?? [], userId: req.user?.id });
+    const errors = Array.isArray(input.errors) ? (input.errors as GameErrorReport) : [];
+    const result = await container.games.submit({ ...input, errors, userId: req.user?.id });
     res.status(201).json(result);
   } catch (error) {
     next(error);

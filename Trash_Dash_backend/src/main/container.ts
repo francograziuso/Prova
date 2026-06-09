@@ -10,6 +10,7 @@ import { createUserUseCases } from "../application/use-cases/users/userUseCases"
 import { JwtTokenService } from "../infrastructure/auth/JwtTokenService";
 import { BigDataCloudGeolocationProvider } from "../infrastructure/geolocation/BigDataCloudGeolocationProvider";
 import { prisma } from "../infrastructure/prisma/client";
+import { PrismaTransactionManager } from "../infrastructure/prisma/PrismaTransactionManager";
 import { PrismaCatalogRepository } from "../infrastructure/prisma/repositories/PrismaCatalogRepository";
 import { PrismaGameRepository } from "../infrastructure/prisma/repositories/PrismaGameRepository";
 import { PrismaLeaderboardRepository } from "../infrastructure/prisma/repositories/PrismaLeaderboardRepository";
@@ -24,6 +25,7 @@ const catalogRepository = new PrismaCatalogRepository(prisma);
 const leaderboardRepository = new PrismaLeaderboardRepository(prisma);
 const shopRepository = new PrismaShopRepository(prisma);
 const lobbyRepository = new PrismaLobbyRepository(prisma);
+const transactionManager = new PrismaTransactionManager(prisma);
 
 export const container = {
   auth: createAuthUseCases({
@@ -32,10 +34,10 @@ export const container = {
     tokenService: new JwtTokenService()
   }),
   users: createUserUseCases(userRepository),
-  games: createGameUseCases(gameRepository, userRepository),
+  games: createGameUseCases(gameRepository, userRepository, transactionManager),
   catalog: createCatalogUseCases(catalogRepository),
   leaderboard: createLeaderboardUseCases(leaderboardRepository),
-  shop: createShopUseCases(shopRepository),
-  lobbies: createLobbyUseCases(lobbyRepository, env.LOBBY_TTL_MINUTES),
+  shop: createShopUseCases(shopRepository, transactionManager),
+  lobbies: createLobbyUseCases(lobbyRepository, env.LOBBY_TTL_MINUTES, transactionManager),
   geolocation: createGeolocationUseCases(new BigDataCloudGeolocationProvider())
 };

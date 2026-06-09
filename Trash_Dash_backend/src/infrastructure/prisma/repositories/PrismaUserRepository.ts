@@ -1,17 +1,18 @@
-import type { PrismaClient } from "@prisma/client";
 import type { SettingsInput, UserProfile } from "../../../domain/entities/types";
 import type { UserRepository } from "../../../domain/repositories/UserRepository";
-import { toUserProfile } from "../mappers/userMapper";
+import { toUserProfile, toUserSettings } from "../mappers/userMapper";
+import type { PrismaClientLike } from "../PrismaClientLike";
 
 const profileInclude = { settings: true, purchases: true } as const;
 
 export class PrismaUserRepository implements UserRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClientLike) {}
 
-  findByEmailOrUsername(email: string, username: string) {
-    return this.prisma.user.findFirst({
+  async findByEmailOrUsername(email: string, username: string) {
+    const user = await this.prisma.user.findFirst({
       where: { OR: [{ email }, { username }] }
     });
+    return user ? toUserProfile(user) : null;
   }
 
   async findByEmailWithPassword(email: string): Promise<(UserProfile & { passwordHash: string }) | null> {
@@ -46,12 +47,13 @@ export class PrismaUserRepository implements UserRepository {
     return user ? toUserProfile(user) : null;
   }
 
-  updateSettings(userId: number, input: SettingsInput) {
-    return this.prisma.setting.upsert({
+  async updateSettings(userId: number, input: SettingsInput) {
+    const settings = await this.prisma.setting.upsert({
       where: { userId },
       update: input,
       create: { userId, ...input }
     });
+    return toUserSettings(settings);
   }
 
   async incrementStats(userId: number, input: { coins: number; score: number }) {

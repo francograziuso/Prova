@@ -1,39 +1,22 @@
-import type { Difficulty, LobbyStatus } from "../../../domain/entities/types";
+import type { Difficulty, LobbyRecord } from "../../../domain/entities/types";
 import { DomainError } from "../../../domain/errors/DomainError";
 import type { LobbyRepository } from "../../../domain/repositories/LobbyRepository";
-
-type LobbyRecord = {
-  code: string;
-  hostId: number;
-  guestId: number | null;
-  status: LobbyStatus;
-  hostScore: number | null;
-  guestScore: number | null;
-  expiresAt: Date;
-};
-
-function asLobby(value: unknown): LobbyRecord | null {
-  return value as LobbyRecord | null;
-}
-
-function makeLobbyCode() {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "TD-";
-  for (let i = 0; i < 4; i += 1) code += alphabet[Math.floor(Math.random() * alphabet.length)];
-  return code;
-}
+import { createLobbyCode, normalizeLobbyCode } from "../../../domain/value-objects/lobbyCode";
+import { createPassthroughTransactionManager, type TransactionManager } from "../../ports/TransactionManager";
 
 async function createUniqueLobbyCode(lobbies: LobbyRepository) {
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    const code = makeLobbyCode();
+    const code = createLobbyCode();
     if (!(await lobbies.existsByCode(code))) return code;
   }
   throw new DomainError(500, "Impossibile generare un codice lobby univoco");
 }
 
-export function createLobbyUseCases(lobbies: LobbyRepository, ttlMinutes: number) {
+export function createLobbyUseCases(lobbies: LobbyRepository, ttlMinutes: number, transactions?: TransactionManager) {
+  const transactionManager = transactions ?? createPassthroughTransactionManager({ lobbies });
+
   async function getExistingLobby(code: string) {
-    const lobby = asLobby(await lobbies.findByCode(code.toUpperCase()));
+    const lobby = await lobbies.findByCode(normalizeLobbyCode(code));
     if (!lobby) throw new DomainError(404, "Lobby non trovata");
     return lobby;
   }
@@ -56,7 +39,7 @@ export function createLobbyUseCases(lobbies: LobbyRepository, ttlMinutes: number
     },
 
     async join(input: { code: string; userId: number }) {
-      const code = input.code.toUpperCase();
+      const code = normalizeLobbyCode(input.code);
       const lobby = await getExistingLobby(code);
       if (lobby.hostId === input.userId) throw new DomainError(400, "Non puoi sfidare te stesso");
       if (lobby.status !== "WAITING") throw new DomainError(409, "Lobby non disponibile");
@@ -69,7 +52,7 @@ export function createLobbyUseCases(lobbies: LobbyRepository, ttlMinutes: number
     },
 
     async start(input: { code: string; userId: number }) {
-      const code = input.code.toUpperCase();
+      const code = normalizeLobbyCode(input.code);
       const lobby = await getExistingLobby(code);
       if (![lobby.hostId, lobby.guestId].includes(input.userId)) throw new DomainError(403, "Non partecipi a questa lobby");
       if (!lobby.guestId) throw new DomainError(409, "In attesa dell'avversario");
@@ -78,28 +61,20 @@ export function createLobbyUseCases(lobbies: LobbyRepository, ttlMinutes: number
     },
 
     async finish(input: { code: string; userId: number; score: number }) {
-      const code = input.code.toUpperCase();
-      const lobby = await getExistingLobby(code);
-      if (![lobby.hostId, lobby.guestId].includes(input.userId)) throw new DomainError(403, "Non partecipi a questa lobby");
-      if (!lobby.guestId) throw new DomainError(409, "In attesa dell'avversario");
+      const code = normalizeLobbyCode(input.code);
 
-      if (lobby.status === "FINISHED") {
-        return lobbies.findByCode(code);
-      }
+      return transactionManager.run(async (repositories) => {
+        const lobby = await repositories.lobbies.findByCode(code);
+        if (!lobby) throw new DomainError(404, "Lobby non trovata");
+        if (![lobby.hostId, lobby.guestId].includes(input.userId)) throw new DomainError(403, "Non partecipi a questa lobby");
+        if (!lobby.guestId) throw new DomainError(409, "In attesa dell'avversario");
+        if (lobby.status === "FINISHED") return repositories.lobbies.findByCode(code);
+        if (lobby.status !== "IN_PROGRESS") throw new DomainError(409, "Scontro non in corso");
 
-      if (lobby.status !== "IN_PROGRESS") throw new DomainError(409, "Scontro non in corso");
-
-      const partiallyUpdated = asLobby(await lobbies.updateScore({ code, userId: input.userId, score: input.score }));
-      if (!partiallyUpdated) throw new DomainError(404, "Lobby non trovata");
-
-      if (partiallyUpdated.hostScore !== null && partiallyUpdated.guestScore !== null) {
-        const hostScore = partiallyUpdated.hostScore ?? 0;
-        const guestScore = partiallyUpdated.guestScore ?? 0;
-        const winnerId = hostScore === guestScore ? null : hostScore > guestScore ? partiallyUpdated.hostId : partiallyUpdated.guestId;
-        return lobbies.finish({ code, winnerId });
-      }
-
-      return partiallyUpdated;
+        const updated = await repositories.lobbies.recordScoreAndMaybeFinish({ code, userId: input.userId, score: input.score });
+        if (!updated) throw new DomainError(404, "Lobby non trovata");
+        return updated;
+      });
     }
   };
 }

@@ -7,7 +7,7 @@ import { createLobbyUseCases } from "../src/application/use-cases/lobbies/lobbyU
 import { createShopUseCases } from "../src/application/use-cases/shop/shopUseCases";
 import type { GeolocationProvider } from "../src/application/ports/GeolocationProvider";
 import type { PasswordHasher, TokenService } from "../src/application/ports/SecurityPorts";
-import type { Difficulty, GameSubmitInput, LobbyStatus, PublicLeaderboardUser, SettingsInput, UserProfile } from "../src/domain/entities/types";
+import type { Difficulty, GameRecord, GameSubmitInput, LobbyStatus, PublicLeaderboardUser, SettingsInput, ShopItem, UserProfile } from "../src/domain/entities/types";
 import type { GameRepository } from "../src/domain/repositories/GameRepository";
 import type { LeaderboardRepository } from "../src/domain/repositories/LeaderboardRepository";
 import type { LobbyRepository } from "../src/domain/repositories/LobbyRepository";
@@ -75,11 +75,26 @@ class InMemoryUserRepository implements UserRepository {
 }
 
 class InMemoryGameRepository implements GameRepository {
-  public created: unknown[] = [];
+  public created: GameRecord[] = [];
 
   async create(input: GameSubmitInput & { coinsEarned: number }) {
-    this.created.push(input);
-    return { id: this.created.length, ...input };
+    const game: GameRecord = {
+      id: this.created.length + 1,
+      userId: input.userId ?? null,
+      mode: input.mode,
+      difficulty: input.difficulty,
+      score: input.score,
+      status: input.status,
+      livesRemaining: input.livesRemaining ?? null,
+      durationSeconds: input.durationSeconds ?? null,
+      errors: input.errors,
+      coinsEarned: input.coinsEarned,
+      region: input.region ?? null,
+      capitalCity: input.capitalCity ?? null,
+      createdAt: new Date()
+    };
+    this.created.push(game);
+    return game;
   }
 
   async findRecentByUserId(_userId: number, _limit: number) {
@@ -106,8 +121,9 @@ class InMemoryLeaderboardRepository implements LeaderboardRepository {
 
 class InMemoryShopRepository implements ShopRepository {
   private items = new Map([
-    ["tree_green", { id: "tree_green", cost: 0 }],
-    ["tree_moon", { id: "tree_moon", cost: 50 }]
+    ["tree_green", { id: "tree_green", name: "Base", type: "Estetico", cost: 0, iconHealthy: "🌳", iconDead: "🪾" }],
+    ["tree_moon", { id: "tree_moon", name: "Moon", type: "Estetico", cost: 50, iconHealthy: "🌙", iconDead: "🌑" }],
+    ["tree_prism", { id: "tree_prism", name: "Prism", type: "Estetico", cost: 500, iconHealthy: "💎", iconDead: "🪨" }]
   ]);
   private users = new Map<number, UserProfile>();
   private purchases = new Set<string>();
@@ -116,7 +132,7 @@ class InMemoryShopRepository implements ShopRepository {
     this.users.set(user.id, user);
   }
 
-  async findItems() {
+  async findItems(): Promise<ShopItem[]> {
     return [...this.items.values()];
   }
 
@@ -135,14 +151,17 @@ class InMemoryShopRepository implements ShopRepository {
   async buyItem(input: { userId: number; itemId: string; cost: number }) {
     const user = this.users.get(input.userId);
     assert.ok(user, "Utente shop test non trovato");
+    if (this.purchases.has(`${input.userId}:${input.itemId}`)) return { status: "already-owned" as const, user };
+    if (user.coins < input.cost) throw new Error("Monete insufficienti");
     user.coins -= input.cost;
     this.purchases.add(`${input.userId}:${input.itemId}`);
-    return user;
+    return { status: "purchased" as const, user };
   }
 
   async equipItem(input: { userId: number; itemId: string }) {
     const user = this.users.get(input.userId);
     if (!user) return null;
+    if (!this.purchases.has(`${input.userId}:${input.itemId}`)) return null;
     user.settings = { ...(user.settings as object), equippedItemId: input.itemId };
     return user;
   }
@@ -214,6 +233,27 @@ class InMemoryLobbyRepository implements LobbyRepository {
     if (!lobby) return null;
     if (input.userId === lobby.hostId && lobby.hostScore === null) lobby.hostScore = input.score;
     if (input.userId === lobby.guestId && lobby.guestScore === null) lobby.guestScore = input.score;
+    return lobby;
+  }
+
+  async recordScoreAndMaybeFinish(input: { code: string; userId: number; score: number }) {
+    const lobby = this.lobbies.get(input.code);
+    if (!lobby) return null;
+    if (lobby.status !== "IN_PROGRESS") return lobby;
+
+    if (input.userId === lobby.hostId && lobby.hostScore === null) lobby.hostScore = input.score;
+    if (input.userId === lobby.guestId && lobby.guestScore === null) lobby.guestScore = input.score;
+
+    if (lobby.hostScore !== null && lobby.guestScore !== null) {
+      lobby.status = "FINISHED";
+      lobby.winnerId =
+        lobby.hostScore === lobby.guestScore
+          ? null
+          : lobby.hostScore > lobby.guestScore
+          ? lobby.hostId
+          : lobby.guestId;
+    }
+
     return lobby;
   }
 
@@ -332,6 +372,11 @@ async function testShopUseCases() {
 
   const bought = await shop.buy(7, "tree_moon");
   assert.equal(bought.user?.coins, 50);
+
+  const duplicateBuy = await shop.buy(7, "tree_moon");
+  assert.equal(duplicateBuy.user?.coins, 50);
+
+  await assert.rejects(() => shop.buy(7, "tree_prism"), /Monete insufficienti/);
 
   const equipped = await shop.equip(7, "tree_moon");
   assert.equal((equipped.user?.settings as { equippedItemId?: string })?.equippedItemId, "tree_moon");

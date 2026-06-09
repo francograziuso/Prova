@@ -1,11 +1,13 @@
-import type { PrismaClient } from "@prisma/client";
-import type { ShopRepository } from "../../../domain/repositories/ShopRepository";
+import { Prisma } from "@prisma/client";
+import { DomainError } from "../../../domain/errors/DomainError";
+import type { BuyItemResult, ShopRepository } from "../../../domain/repositories/ShopRepository";
 import { toUserProfile } from "../mappers/userMapper";
+import type { PrismaClientLike } from "../PrismaClientLike";
 
 const profileInclude = { settings: true, purchases: true } as const;
 
 export class PrismaShopRepository implements ShopRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClientLike) {}
 
   findItems() {
     return this.prisma.item.findMany({ orderBy: { cost: "asc" } });
@@ -13,8 +15,7 @@ export class PrismaShopRepository implements ShopRepository {
 
   findItem(itemId: string) {
     return this.prisma.item.findUnique({
-      where: { id: itemId },
-      select: { id: true, cost: true }
+      where: { id: itemId }
     });
   }
 
@@ -28,19 +29,39 @@ export class PrismaShopRepository implements ShopRepository {
     return user ? toUserProfile(user) : null;
   }
 
-  async buyItem(input: { userId: number; itemId: string; cost: number }) {
-    const user = await this.prisma.user.update({
-      where: { id: input.userId },
-      data: {
-        coins: { decrement: input.cost },
-        purchases: { create: { itemId: input.itemId } }
-      },
-      include: profileInclude
+  async buyItem(input: { userId: number; itemId: string; cost: number }): Promise<BuyItemResult> {
+    try {
+      await this.prisma.purchase.create({
+        data: { userId: input.userId, itemId: input.itemId }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        return { status: "already-owned", user: await this.findUserProfile(input.userId) };
+      }
+      throw error;
+    }
+
+    const updated = await this.prisma.user.updateMany({
+      where: { id: input.userId, coins: { gte: input.cost } },
+      data: { coins: { decrement: input.cost } }
     });
-    return toUserProfile(user);
+
+    if (updated.count !== 1) {
+      throw new DomainError(400, "Monete insufficienti");
+    }
+
+    const user = await this.findUserProfile(input.userId);
+    if (!user) throw new DomainError(404, "Utente non trovato");
+    return { status: "purchased", user };
   }
 
   async equipItem(input: { userId: number; itemId: string }) {
+    const purchase = await this.prisma.purchase.findUnique({
+      where: { userId_itemId: { userId: input.userId, itemId: input.itemId } }
+    });
+
+    if (!purchase) return null;
+
     await this.prisma.setting.upsert({
       where: { userId: input.userId },
       update: { equippedItemId: input.itemId },

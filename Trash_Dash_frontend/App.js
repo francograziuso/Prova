@@ -3,8 +3,6 @@ import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  SvgXml,
-  SvgUri,
   Svg,
   Defs,
   LinearGradient,
@@ -68,6 +66,8 @@ import {
   getWasteDescription,
   getWasteName,
 } from "./src/presentation/i18n/translations";
+import { CosmeticVisual } from "./src/presentation/components/CosmeticVisual";
+import { useActiveShopItem } from "./src/presentation/hooks/useActiveShopItem";
 import { styles } from "./src/presentation/styles/appStyles";
 
 const RUNNER_DRAGON_IMAGE = require("./assets/trashdash_runner_dragon.png");
@@ -514,124 +514,6 @@ defeatSvg: ALBERO_AUTUNNALE_DEFEAT_BETTER_SVG,
   },
   ...EXTRA_TREE_ITEMS.map((item) => ({ ...item, bought: false })),
 ];
- 
-function CosmeticVisual({ item, variant = "base", size = 64, emojiStyle, animated = true }) {
-  const glowAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!animated) {
-      glowAnim.setValue(0);
-      return;
-    }
-
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 2200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-            isInteraction: false,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 2200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-            isInteraction: false,
-        }),
-      ])
-    );
-
-    animation.start();
-    return () => animation.stop();
-  }, [variant, animated]);
-
-  const svgXml =
-    variant === "victory"
-      ? item.victorySvg
-      : variant === "defeat"
-      ? item.defeatSvg
-      : item.baseSvg;
-
-  const svgAsset =
-    variant === "victory"
-      ? item.victorySvgAsset
-      : variant === "defeat"
-      ? item.defeatSvgAsset
-      : item.baseSvgAsset;
-
-  const renderVisual = () => {
-    if (svgXml && svgXml.includes("<svg") && svgXml.includes("</svg>")) {
-      return <SvgXml xml={svgXml} width={size} height={size} />;
-    }
-
-    if (svgAsset) {
-      const assetUri = Asset.fromModule(svgAsset).uri;
-      return <SvgUri uri={assetUri} width={size} height={size} />;
-    }
-
-    return (
-      <Text
-        allowFontScaling={false}
-        style={[
-          emojiStyle,
-          styles.ecoCosmeticFallback,
-          { fontSize: Math.max(28, size * 0.72) },
-        ]}
-      >
-        {variant === "defeat" ? item.iconDead : item.iconHealthy}
-      </Text>
-    );
-  };
-
-  const glowOpacity = animated
-    ? glowAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0.18, variant === "defeat" ? 0.26 : 0.46],
-      })
-    : variant === "defeat"
-    ? 0.18
-    : 0.24;
-
-  const visualScale = animated
-    ? glowAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, variant === "defeat" ? 1.02 : 1.045],
-      })
-    : 1;
-
-  return (
-    <View
-      pointerEvents="none"
-      style={[
-        styles.ecoCosmeticFrame,
-        { width: size * 1.38, height: size * 1.38 },
-      ]}
-    >
-      <Animated.View
-        style={[
-          styles.ecoCosmeticGlow,
-          variant === "defeat" ? styles.ecoCosmeticGlowDirty : styles.ecoCosmeticGlowClean,
-          {
-            opacity: glowOpacity,
-          },
-        ]}
-      />
-
-      <Animated.View
-        style={[
-          styles.ecoCosmeticInner,
-          {
-            transform: [{ scale: visualScale }],
-          },
-        ]}
-      >
-        {renderVisual()}
-      </Animated.View>
-    </View>
-  );
-}
  
 let globalButtonSfxHandler = null;
  
@@ -2634,9 +2516,7 @@ const playSoundEffect = (isCorrect, selectedBinId) => {
   });
 };
  
-const activeTree = useMemo(() => {
-  return shopItems.find((item) => item.id === equippedTreeId) || shopItems[0];
-}, [shopItems, equippedTreeId]);
+const activeTree = useActiveShopItem(shopItems, equippedTreeId);
  
 const currentWaste = currentGameWastes[wasteIndex];
  

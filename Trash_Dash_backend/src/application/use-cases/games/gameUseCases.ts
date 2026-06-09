@@ -1,26 +1,26 @@
-import type { Difficulty, GameSubmitInput, GameStatus } from "../../../domain/entities/types";
+import type { GameSubmitInput } from "../../../domain/entities/types";
 import type { GameRepository } from "../../../domain/repositories/GameRepository";
 import type { UserRepository } from "../../../domain/repositories/UserRepository";
+import { calculateCoinsEarned } from "../../../domain/value-objects/gameResult";
+import { createPassthroughTransactionManager, type TransactionManager } from "../../ports/TransactionManager";
 
-const coinRewardCaps: Record<Difficulty, number> = { Facile: 5, Medio: 20, Difficile: 35 };
+export { calculateCoinsEarned };
 
-export function calculateCoinsEarned(status: GameStatus, score: number, difficulty: Difficulty) {
-  if (status !== "WIN") return 0;
-  const cap = coinRewardCaps[difficulty] ?? coinRewardCaps.Facile;
-  return Math.min(cap, Math.max(0, Math.floor(Math.max(0, score) / 4)));
-}
+export function createGameUseCases(games: GameRepository, users: UserRepository, transactions?: TransactionManager) {
+  const transactionManager = transactions ?? createPassthroughTransactionManager({ games, users });
 
-export function createGameUseCases(games: GameRepository, users: UserRepository) {
   return {
     async submit(input: GameSubmitInput) {
       const coinsEarned = calculateCoinsEarned(input.status, input.score, input.difficulty);
-      const game = await games.create({ ...input, coinsEarned });
 
-      const user = input.userId
-        ? await users.incrementStats(input.userId, { coins: coinsEarned, score: input.score })
-        : null;
+      return transactionManager.run(async (repositories) => {
+        const game = await repositories.games.create({ ...input, coinsEarned });
+        const user = input.userId
+          ? await repositories.users.incrementStats(input.userId, { coins: coinsEarned, score: input.score })
+          : null;
 
-      return { game, user };
+        return { game, user };
+      });
     },
 
     async mine(userId: number) {
