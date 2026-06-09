@@ -27,4 +27,5 @@ EXPO_PUBLIC_WS_URL=ws://$lanIp`:4000/ws
 "@ | Set-Content -LiteralPath .env -Encoding UTF8
 
 npm install
+npx expo install --check
 npx expo start --lan --clear

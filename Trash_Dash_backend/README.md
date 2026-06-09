@@ -84,7 +84,7 @@ WS     /ws
 
 ## Expo Go su telefono reale
 
-Il telefono non vede `localhost` del PC. Apri `Trash_Dash_frontend/.env` e imposta:
+Il telefono non vede `localhost` del PC. Lo script `Trash_Dash_frontend/start-light-windows.ps1` genera `.env` con l'IP LAN del PC:
 
 ```env
 EXPO_PUBLIC_API_BASE_URL=http://IP_DEL_PC:4000/api
@@ -92,3 +92,5 @@ EXPO_PUBLIC_WS_URL=ws://IP_DEL_PC:4000/ws
 ```
 
 Poi riavvia Expo con `npx expo start --lan --clear`.
+
+Lo scontro 1v1 usa polling REST dal frontend; il server WebSocket `/ws` resta disponibile come canale backend, ma non cambia la logica dello scontro.

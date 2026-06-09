@@ -37,12 +37,3 @@ temp/
 .DS_Store
 .vscode/
 .Rhistory
-
-# Prisma / database
-*.db
-*.sqlite
-prisma/dev.db
-.local_pg/
-**/.local_pg/
-docker-compose.override.yml
-**/docker-compose.override.yml

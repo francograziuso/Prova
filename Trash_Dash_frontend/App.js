@@ -56,7 +56,7 @@ import {
   getLocalRuleFallback,
   normalizeItalianRegion,
 } from "./src/domain/location/localRules";
-import { apiRequest, reverseGeocodeWithBigDataCloud, WS_URL } from "./src/infrastructure/api/trashDashApi";
+import { apiRequest, reverseGeocodeWithBigDataCloud } from "./src/infrastructure/api/trashDashApi";
 import { LOCATION_CONSENT, STORAGE_KEYS } from "./src/infrastructure/storage/storageKeys";
 import {
   TRANSLATIONS,
@@ -2569,14 +2569,23 @@ const getLocationModeLabel = () => {
 };
 
 const getLocalizedLocationStatus = () => {
-  if (!localization) return text.locationStandardStatus || "Standard nazionale: UNI 11686";
+  const explicitStatusPattern = /permesso|permission|gps|fuori italia|outside italy|regione non riconosciuta|region not recognized|non disponibile|unavailable/i;
+
+  if (!localization) {
+    if (explicitStatusPattern.test(locationStatus)) return locationStatus;
+    return text.locationStandardStatus || "Standard nazionale: UNI 11686";
+  }
 
   if (locationStatus === "UNI 11686") {
     return text.locationStandardStatus || "Standard nazionale: UNI 11686";
   }
 
-  if (/permesso|permission|gps disattivato|gps disabled|fuori italia|outside italy|non disponibile|unavailable/i.test(locationStatus)) {
-    return text.locationStandardStatus || "Standard nazionale: UNI 11686";
+  if (/regole locali offline|offline local rules/i.test(locationStatus)) {
+    return locationStatus;
+  }
+
+  if (explicitStatusPattern.test(locationStatus)) {
+    return locationStatus;
   }
 
   if (activeRuleSet && !activeRuleSet.isDefault) {
@@ -2848,7 +2857,7 @@ const loadCatalogRules = async (area = null, { statusMessage } = {}) => {
       setActiveBins(fallbackBins);
       setActiveWastePools(buildWastePoolsForBins(fallbackBins));
       setActiveRuleSet(localFallback.ruleSet);
-      setLocationStatus(statusMessage || `${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`);
+      setLocationStatus(statusMessage || `Regole locali offline: ${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`);
       return { ...localFallback, localFallback: true };
     }
 
@@ -2876,7 +2885,7 @@ const loadCatalogRules = async (area = null, { statusMessage } = {}) => {
       setActiveBins(fallbackBins);
       setActiveWastePools(buildWastePoolsForBins(fallbackBins));
       setActiveRuleSet(localFallback.ruleSet);
-      setLocationStatus(statusMessage || `${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region}) - regole locali offline`);
+      setLocationStatus(statusMessage || `Regole locali offline: ${localFallback.ruleSet.capitalCity} (${localFallback.ruleSet.region})`);
       return { ...localFallback, offline: true, localFallback: true };
     }
 
@@ -2996,7 +3005,7 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
         setLocationConsentMode(LOCATION_CONSENT.never);
         await writeLocationConsent(LOCATION_CONSENT.never).catch(() => {});
       }
-      await loadNationalLocationRules(text.locationPermissionDeniedStatus || "UNI 11686");
+      await loadNationalLocationRules(text.locationPermissionDeniedStatus || "Permesso posizione negato: uso standard UNI 11686");
       return false;
     }
 
@@ -3011,7 +3020,7 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
 
     if (!servicesEnabled) {
       if (requestPermission) setLocalization(false);
-      await loadNationalLocationRules(text.locationUnavailableStatus || "UNI 11686");
+      await loadNationalLocationRules(text.locationGpsUnavailableStatus || "GPS non disponibile: uso standard UNI 11686");
       return false;
     }
 
@@ -3027,23 +3036,23 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
 
     if (!geo) {
       setGeoArea({ latitude, longitude });
-      await loadCatalogRules(null, { statusMessage: text.locationUnavailableStatus || "UNI 11686" });
-      return true;
+      await loadCatalogRules(null, { statusMessage: text.locationRegionUnknownStatus || "Regione non riconosciuta: uso standard UNI 11686" });
+      return false;
     }
 
     const countryCode = normalizeCountryCode(geo.countryCode || geo.isoCountryCode || geo.country);
 
     if (countryCode && countryCode !== "IT") {
-      await loadNationalLocationRules(text.locationOutsideItalyStatus || "UNI 11686");
-      return true;
+      await loadNationalLocationRules(text.locationOutsideItalyStatus || "Fuori Italia: uso standard UNI 11686");
+      return false;
     }
 
     const region = normalizeItalianRegion(geo.principalSubdivision || geo.region || geo.subregion);
 
     if (!region) {
       setGeoArea({ latitude, longitude });
-      await loadCatalogRules(null, { statusMessage: text.locationUnavailableStatus || "UNI 11686" });
-      return true;
+      await loadCatalogRules(null, { statusMessage: text.locationRegionUnknownStatus || "Regione non riconosciuta: uso standard UNI 11686" });
+      return false;
     }
 
     const capitalCity = resolveCapitalCity(region, geo.city || geo.locality);
@@ -3054,7 +3063,7 @@ const tryApplyDeviceLocationRules = async ({ requestPermission = false } = {}) =
     return true;
   } catch (error) {
     console.log("Localizzazione non riuscita:", error.message);
-    await loadNationalLocationRules(text.locationUnavailableStatus || "UNI 11686").catch((fallbackError) =>
+    await loadNationalLocationRules(text.locationUnavailableStatus || "Localizzazione non disponibile: uso standard UNI 11686").catch((fallbackError) =>
       console.log("Fallback regole nazionali non riuscito:", fallbackError.message)
     );
     return false;
@@ -3155,12 +3164,6 @@ const handleLocalizationChange = async (value) => {
   const applied = await tryApplyDeviceLocationRules({ requestPermission: true });
   await persistLocationPromptDecision(applied);
   setLocalization(applied);
-
-  if (!applied) {
-    await loadNationalLocationRules("UNI 11686").catch((error) =>
-      console.log("Ripristino regole UNI non riuscito:", error.message)
-    );
-  }
 };
 
 useEffect(() => {

@@ -138,9 +138,11 @@ export const TRANSLATIONS = {
     locationModeNever: "Mai",
     locationModeUnset: "Non scelta",
     locationStandardStatus: "Standard nazionale: UNI 11686",
-    locationPermissionDeniedStatus: "Permesso negato: standard nazionale UNI 11686",
-    locationOutsideItalyStatus: "Fuori Italia: standard nazionale UNI 11686",
-    locationUnavailableStatus: "Localizzazione non disponibile: standard nazionale UNI 11686",
+    locationPermissionDeniedStatus: "Permesso posizione negato: uso standard UNI 11686",
+    locationGpsUnavailableStatus: "GPS non disponibile: uso standard UNI 11686",
+    locationRegionUnknownStatus: "Regione non riconosciuta: uso standard UNI 11686",
+    locationOutsideItalyStatus: "Fuori Italia: uso standard UNI 11686",
+    locationUnavailableStatus: "Localizzazione non disponibile: uso standard UNI 11686",
 
     binLabels: {
       carta: "Carta",
@@ -289,9 +291,11 @@ export const TRANSLATIONS = {
     locationModeNever: "Never",
     locationModeUnset: "Not chosen",
     locationStandardStatus: "National standard: UNI 11686",
-    locationPermissionDeniedStatus: "Permission denied: national standard UNI 11686",
-    locationOutsideItalyStatus: "Outside Italy: national standard UNI 11686",
-    locationUnavailableStatus: "Location unavailable: national standard UNI 11686",
+    locationPermissionDeniedStatus: "Location permission denied: using UNI 11686 standard",
+    locationGpsUnavailableStatus: "GPS unavailable: using UNI 11686 standard",
+    locationRegionUnknownStatus: "Region not recognized: using UNI 11686 standard",
+    locationOutsideItalyStatus: "Outside Italy: using UNI 11686 standard",
+    locationUnavailableStatus: "Location unavailable: using UNI 11686 standard",
 
     binLabels: {
       carta: "Paper",

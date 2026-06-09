@@ -22,6 +22,8 @@ TrashDash_fullstack_codex/
 - Docker Desktop installato e avviato
 - Expo Go sul telefono
 - PC e telefono sulla stessa rete Wi-Fi
+- Firewall Windows aperto sulle porte `4000` e `8081`
+- Frontend Expo SDK 54, coerente con `Trash_Dash_frontend/package.json`
 
 ## Script backend + Docker
 
@@ -138,6 +140,7 @@ try {
   Write-Step "Verifica backend"
   npm run typecheck
   npm run build
+  npm run test:usecases
 
   Write-Step "Avvio backend"
   npm run dev
@@ -234,7 +237,7 @@ try {
   npx expo install --check
 
   Write-Step "Avvio Expo"
-  npx expo start --lan -c
+  npx expo start --lan --clear
 } finally {
   Pop-Location
 }
@@ -244,4 +247,5 @@ try {
 
 - Se Expo Go non raggiunge il backend, controlla firewall Windows sulle porte `4000` e `8081`.
 - Se telefono e PC non sono sulla stessa rete, nel frontend puoi sostituire `--lan` con `--tunnel`.
-- Se l'icona o asset vecchi restano visibili, il `-c` dello script frontend pulisce la cache Metro.
+- Se l'icona o asset vecchi restano visibili, il `--clear` dello script frontend pulisce la cache Metro.
+- Lo scontro 1v1 usa polling REST per sincronizzare lobby e risultati; `EXPO_PUBLIC_WS_URL` resta configurato solo come endpoint compatibile con il backend.
