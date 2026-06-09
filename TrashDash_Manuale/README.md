@@ -1,6 +1,8 @@
 # TrashDash Manuale - Demo localizzazione manuale
 
-Questa demo serve a testare rapidamente le regole locali di TrashDash in regioni diverse senza usare `expo-location`.
+Questa demo serve a ispezionare rapidamente le regole locali di TrashDash in regioni diverse senza usare `expo-location`.
+
+Nota: l'app Expo ora contiene anche un test manuale vero dentro `Impostazioni > Test localizzazione manuale`. Quello è il modo consigliato per giocare realmente con una regione simulata; questa pagina resta utile per controllare velocemente coordinate, backend e catalogo.
 
 La pagina permette di:
 
@@ -22,4 +24,3 @@ La pagina permette di:
 5. Premi `Richiedi posizione manuale`.
 
 La demo non modifica database, utenti o impostazioni. Legge solo endpoint pubblici del catalogo e reverse geocoding.
-

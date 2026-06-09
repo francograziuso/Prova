@@ -30,22 +30,22 @@ const LOCAL_RULE_FALLBACKS = [
   { region: "Basilicata", capitalCity: "Potenza", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
   { region: "Calabria", capitalCity: "Catanzaro", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
   { region: "Campania", capitalCity: "Napoli", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
-  { region: "Emilia-Romagna", capitalCity: "Bologna", colors: { carta: "Blu / Azzurro", multi: "Giallo - metalli", vetro: "Verde + metalli", umido: "Marrone", secco: "Grigio" } },
-  { region: "Friuli-Venezia Giulia", capitalCity: "Trieste", colors: { carta: "Giallo", multi: "Blu - metalli", vetro: "Verde + metalli", umido: "Marrone", secco: "Grigio" } },
+  { region: "Emilia-Romagna", capitalCity: "Bologna", colors: { carta: "Blu / Azzurro", multi: "Giallo (plastica)", vetro: "Verde + lattine/metalli", umido: "Marrone", secco: "Grigio" } },
+  { region: "Friuli-Venezia Giulia", capitalCity: "Trieste", colors: { carta: "Giallo", multi: "Blu (plastica)", vetro: "Verde + lattine/metalli", umido: "Marrone", secco: "Grigio" } },
   { region: "Lazio", capitalCity: "Roma", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" } },
   { region: "Liguria", capitalCity: "Genova", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
-  { region: "Lombardia", capitalCity: "Milano", colors: { carta: "Blu (nuovi coperchi; vecchi bianco)", multi: "Sacco giallo trasparente", vetro: "Verde", umido: "Marrone", secco: "Sacco grigio/neutro trasparente" } },
+  { region: "Lombardia", capitalCity: "Milano", colors: { carta: "Blu", multi: "Sacco giallo trasparente", vetro: "Verde", umido: "Marrone", secco: "Sacco grigio/neutro trasparente" } },
   { region: "Marche", capitalCity: "Ancona", colors: { carta: "Blu (nuovi UNI; in alcune guide PaP vecchio contenitore bianco)", multi: "Giallo / metalli turchese", vetro: "Verde (vetro; in alcune zone vetro+metalli)", umido: "Marrone", secco: "Grigio" } },
   { region: "Molise", capitalCity: "Campobasso", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
   { region: "Piemonte", capitalCity: "Torino", colors: { carta: "Giallo", multi: "Grigio - metalli", vetro: "Blu (vetro + imballaggi in metallo)", umido: "Marrone", secco: "Verde" } },
   { region: "Puglia", capitalCity: "Bari", colors: { carta: "Blu / Azzurro", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
-  { region: "Sardegna", capitalCity: "Cagliari", colors: { carta: "Giallo", multi: "Blu - metalli", vetro: "Verde (vetro + latta/lattine)", umido: "Marrone", secco: "Grigio" } },
+  { region: "Sardegna", capitalCity: "Cagliari", colors: { carta: "Giallo", multi: "Blu (plastica)", vetro: "Verde + latta/lattine", umido: "Marrone", secco: "Grigio" } },
   { region: "Sicilia", capitalCity: "Palermo", colors: { carta: "Bianco", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
   { region: "Toscana", capitalCity: "Firenze", colors: { carta: "Giallo (in transizione a Blu)", multi: "Azzurro (in transizione a Giallo)", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
-  { region: "Trentino-Alto Adige", capitalCity: "Trento", colors: { carta: "Giallo", multi: "Blu", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" } },
+  { region: "Trentino-Alto Adige", capitalCity: "Trento", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" } },
   { region: "Umbria", capitalCity: "Perugia", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
   { region: "Valle d'Aosta", capitalCity: "Aosta", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
-  { region: "Veneto", capitalCity: "Venezia", colors: { carta: "Giallo (ci andrebbe anche il tetrapack)", multi: "Verde insieme a vetro e lattine", vetro: "Verde insieme a plastica e lattine", umido: "Marrone", secco: "Grigio" } },
+  { region: "Veneto", capitalCity: "Venezia", colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" } },
 ];
 
 const ITALIAN_REGION_ALIASES = {
@@ -273,6 +273,8 @@ function colorHexFromLocalRule(localColor, fallback) {
 }
 
 function textColorFromBinColor(hex) {
+  const normalized = String(hex || "").toUpperCase();
+  if (normalized === "#F8FAFC" || normalized === "#FFFFFF") return "#111827";
   return "#FFFFFF";
 }
 
@@ -314,7 +316,7 @@ export function getRuleBehaviorFromBins(items = []) {
   const byId = new Map(items.map((item) => [item.id, item]));
   const textFor = (id) => {
     const item = byId.get(id) || {};
-    return `${item.label || ""} ${item.localColor || ""} ${item.note || ""}`.toLowerCase();
+    return `${item.label || ""} ${item.localColor || ""}`.toLowerCase();
   };
 
   const vetroText = textFor("vetro");

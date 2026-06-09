@@ -666,6 +666,8 @@ Queste funzioni coordinano musica, SFX drag, SFX corretto/errore e pulizia risor
 
 Queste funzioni gestiscono permessi, GPS, Expo geocoder, backend reverse, fallback offline e aggiornamento `activeBins`, `activeWastePools`, `activeRuleSet`, `geoArea`, `locationStatus`.
 
+La schermata Impostazioni contiene anche `Test localizzazione manuale`: permette di selezionare regione/capoluogo e applicare le stesse regole all'app reale senza chiedere coordinate al dispositivo. Serve per verificare il gameplay nelle varie regioni senza alterare il flusso GPS standard.
+
 ### Profilo, auth e ospite
 
 - `getDisplayUsername`;
@@ -731,7 +733,7 @@ Gestiscono timer, vite, punteggio, sequenza rifiuti, report errori, feedback vis
 - `fillPreset`: copia coordinate preset negli input.
 - `init`: inizializza pagina.
 
-Questa demo è pensata per testare regioni diverse senza modificare l'app Expo.
+Questa demo è pensata per ispezionare regioni diverse senza modificare l'app Expo. Per giocare davvero con una regione simulata si usa invece il pannello `Test localizzazione manuale` in Impostazioni.
 
 ## 18. Comandi principali
 
@@ -771,4 +773,3 @@ cd C:\Users\napol\Desktop\TrashDash\TrashDash_Manuale
 - Mantenere Express in `presentation`.
 - Mantenere regole pure in `domain` o `application`, evitando dipendenze circolari.
 - La localizzazione è delicata: ogni modifica deve preservare fallback UNI 11686, fallback offline e status espliciti.
-

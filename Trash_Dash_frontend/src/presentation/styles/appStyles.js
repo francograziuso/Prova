@@ -4513,6 +4513,10 @@ hugeMenuLogo: {
     paddingBottom: 24,
   },
 
+  settingsScrollContent: {
+    paddingBottom: 34,
+  },
+
   settingToggleItemRow: {
     backgroundColor: "rgba(15, 46, 65, 0.92)",
     borderRadius: 18,
@@ -4608,6 +4612,112 @@ hugeMenuLogo: {
     paddingHorizontal: 10,
     marginTop: 6,
     marginBottom: 11,
+  },
+
+  manualLocationTestCard: {
+    backgroundColor: "rgba(10, 42, 58, 0.90)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(34, 211, 238, 0.26)",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 11,
+  },
+
+  manualLocationTitleText: {
+    color: "#38BDF8",
+    fontSize: 15,
+    fontWeight: "900",
+    textAlign: "center",
+    marginBottom: 5,
+  },
+
+  manualLocationHintText: {
+    color: "#CBD5E1",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17,
+    textAlign: "center",
+    marginBottom: 10,
+  },
+
+  manualLocationSelectButton: {
+    minHeight: 42,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: "rgba(148, 163, 184, 0.62)",
+    backgroundColor: "rgba(15, 23, 42, 0.94)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+  },
+
+  manualLocationSelectText: {
+    color: "#F8FAFC",
+    fontWeight: "900",
+    fontSize: 13,
+    textAlign: "center",
+  },
+
+  manualLocationOptionsContainer: {
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(34, 211, 238, 0.22)",
+    overflow: "hidden",
+    backgroundColor: "rgba(2, 16, 24, 0.96)",
+  },
+
+  manualLocationOptionsScroll: {
+    maxHeight: 160,
+  },
+
+  manualLocationOptionItem: {
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(148, 163, 184, 0.16)",
+  },
+
+  manualLocationOptionItemActive: {
+    backgroundColor: "rgba(34, 211, 238, 0.18)",
+  },
+
+  manualLocationOptionText: {
+    color: "#F8FAFC",
+    fontSize: 12,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+
+  manualLocationActionsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 10,
+  },
+
+  manualLocationActionButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 13,
+    backgroundColor: "#0369A1",
+    borderWidth: 1.5,
+    borderColor: "#38BDF8",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
+  },
+
+  manualLocationStandardButton: {
+    backgroundColor: "#334155",
+    borderColor: "#94A3B8",
+  },
+
+  manualLocationActionText: {
+    color: "#FFFFFF",
+    fontWeight: "900",
+    fontSize: 12,
+    textAlign: "center",
   },
 
   tdSettingsLogoutButton: {

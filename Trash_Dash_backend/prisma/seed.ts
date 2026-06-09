@@ -81,15 +81,15 @@ const RULES: RuleSeed[] = [
   {
     region: "Emilia-Romagna",
     capitalCity: "Bologna",
-    colors: { carta: "Blu / Azzurro", multi: "Giallo - metalli", vetro: "Verde + metalli", umido: "Marrone", secco: "Grigio" },
-    note: "Sostanzialmente confermato; in base alla zona/servizio Hera possono comparire indicazioni blu o azzurre per carta.",
+    colors: { carta: "Blu / Azzurro", multi: "Giallo (plastica)", vetro: "Verde + lattine/metalli", umido: "Marrone", secco: "Grigio" },
+    note: "Schema Bologna/Hera: plastica nel giallo; vetro e lattine/metalli nel verde.",
     sourceUrl: "https://www.comune.bologna.it/informazioni/mappa-raccolta-rifiuti-bologna"
   },
   {
     region: "Friuli-Venezia Giulia",
     capitalCity: "Trieste",
-    colors: { carta: "Giallo", multi: "Blu - metalli", vetro: "Verde + metalli", umido: "Marrone", secco: "Grigio" },
-    note: "Carta e plastica/metalli corretti rispetto alla tabella iniziale.",
+    colors: { carta: "Giallo", multi: "Blu (plastica)", vetro: "Verde + lattine/metalli", umido: "Marrone", secco: "Grigio" },
+    note: "Schema Trieste: carta nel giallo, plastica nel blu, vetro/lattine nel verde.",
     sourceUrl: "https://www.acegasapsamga.it/assistenza/raccolta-differenziata-zona-t"
   },
   {
@@ -110,13 +110,13 @@ const RULES: RuleSeed[] = [
     region: "Lombardia",
     capitalCity: "Milano",
     colors: {
-      carta: "Blu (nuovi coperchi; vecchi bianco)",
+      carta: "Blu",
       multi: "Sacco giallo trasparente",
       vetro: "Verde",
       umido: "Marrone",
       secco: "Sacco grigio/neutro trasparente"
     },
-    note: "Per plastica/metalli e indifferenziato si indica il colore del sacco, non del cassonetto.",
+    note: "Per plastica/metalli e indifferenziato si indica il colore del sacco; per la carta si usa il blu nei nuovi coperchi.",
     sourceUrl: "https://www.amsa.it/it/milano/servizi/condomini/cassonetti-condominiali"
   },
   {
@@ -162,8 +162,8 @@ const RULES: RuleSeed[] = [
   {
     region: "Sardegna",
     capitalCity: "Cagliari",
-    colors: { carta: "Giallo", multi: "Blu - metalli", vetro: "Verde (vetro + latta/lattine)", umido: "Marrone", secco: "Grigio" },
-    note: "Carta e plastica corretti rispetto alla tabella iniziale.",
+    colors: { carta: "Giallo", multi: "Blu (plastica)", vetro: "Verde + latta/lattine", umido: "Marrone", secco: "Grigio" },
+    note: "Schema Cagliari Porta a Porta: carta gialla, plastica blu, vetro e lattine nel verde.",
     sourceUrl: "https://cagliariportaaporta.it/faq/"
   },
   {
@@ -189,8 +189,8 @@ const RULES: RuleSeed[] = [
   {
     region: "Trentino-Alto Adige",
     capitalCity: "Trento",
-    colors: { carta: "Giallo", multi: "Blu", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" },
-    note: "Schema standard, con possibili differenze operative per vetro/servizi di zona.",
+    colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" },
+    note: "Schema Trento/Dolomiti Ambiente allineato allo standard per carta, imballaggi, vetro, organico e residuo.",
     sourceUrl: "https://dolomitiambiente.it/it/trento/domestica/raccolta-differenziata/guida-alla-raccolta"
   },
   {
@@ -210,14 +210,8 @@ const RULES: RuleSeed[] = [
   {
     region: "Veneto",
     capitalCity: "Venezia",
-    colors: {
-      carta: "Giallo (ci andrebbe anche il tetrapack)",
-      multi: "Verde insieme a vetro e lattine",
-      vetro: "Verde insieme a plastica e lattine",
-      umido: "Marrone",
-      secco: "Grigio"
-    },
-    note: "Per Venezia centro storico/isole Veritas raccoglie vetro, plastica e lattine insieme.",
+    colors: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
+    note: "Standard UNI 11686 applicato per Venezia: il sistema locale è troppo variabile per il modello didattico a cinque bidoni.",
     sourceUrl: "https://www.gruppoveritas.it/comune/venezia-centro-e-isole/domestica-non-domestica/rifiuti/la-raccolta-dei-rifiuti-venezia"
   }
 ];
@@ -589,11 +583,12 @@ function colorHexFromLocalColor(localColor: string | undefined, fallback: string
 }
 
 function textColorFromHex(hex: string) {
+  if (hex.toUpperCase() === "#F8FAFC" || hex.toUpperCase() === "#FFFFFF") return "#111827";
   return "#FFFFFF";
 }
 
 function ruleText(rule: RuleSeed, code: BinCode) {
-  return `${rule.colors[code] || ""} ${rule.note || ""}`.toLowerCase();
+  return `${rule.colors[code] || ""}`.toLowerCase();
 }
 
 function getRuleBehavior(rule: RuleSeed) {

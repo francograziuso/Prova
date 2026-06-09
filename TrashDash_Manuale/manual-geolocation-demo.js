@@ -26,22 +26,22 @@ const FALLBACK_COLORS = {
   Basilicata: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
   Calabria: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
   Campania: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
-  "Emilia-Romagna": { carta: "Blu / Azzurro", multi: "Giallo - metalli", vetro: "Verde + metalli", umido: "Marrone", secco: "Grigio" },
-  "Friuli-Venezia Giulia": { carta: "Giallo", multi: "Blu - metalli", vetro: "Verde + metalli", umido: "Marrone", secco: "Grigio" },
+  "Emilia-Romagna": { carta: "Blu / Azzurro", multi: "Giallo (plastica)", vetro: "Verde + lattine/metalli", umido: "Marrone", secco: "Grigio" },
+  "Friuli-Venezia Giulia": { carta: "Giallo", multi: "Blu (plastica)", vetro: "Verde + lattine/metalli", umido: "Marrone", secco: "Grigio" },
   Lazio: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" },
   Liguria: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
-  Lombardia: { carta: "Blu / Bianco", multi: "Sacco giallo", vetro: "Verde", umido: "Marrone", secco: "Sacco grigio" },
+  Lombardia: { carta: "Blu", multi: "Sacco giallo trasparente", vetro: "Verde", umido: "Marrone", secco: "Sacco grigio/neutro trasparente" },
   Marche: { carta: "Blu", multi: "Giallo / metalli", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
   Molise: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
   Piemonte: { carta: "Giallo", multi: "Grigio - metalli", vetro: "Blu vetro + metalli", umido: "Marrone", secco: "Verde" },
   Puglia: { carta: "Blu / Azzurro", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
-  Sardegna: { carta: "Giallo", multi: "Blu - metalli", vetro: "Verde + lattine", umido: "Marrone", secco: "Grigio" },
+  Sardegna: { carta: "Giallo", multi: "Blu (plastica)", vetro: "Verde + latta/lattine", umido: "Marrone", secco: "Grigio" },
   Sicilia: { carta: "Bianco", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
   Toscana: { carta: "Giallo / Blu", multi: "Azzurro / Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
-  "Trentino-Alto Adige": { carta: "Giallo", multi: "Blu", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" },
+  "Trentino-Alto Adige": { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio chiaro" },
   Umbria: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
   "Valle d'Aosta": { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
-  Veneto: { carta: "Giallo", multi: "Verde con vetro e lattine", vetro: "Verde con plastica e lattine", umido: "Marrone", secco: "Grigio" },
+  Veneto: { carta: "Blu", multi: "Giallo", vetro: "Verde", umido: "Marrone", secco: "Grigio" },
 };
 
 const BIN_LABELS = {
@@ -219,4 +219,3 @@ function init() {
 }
 
 init();
-

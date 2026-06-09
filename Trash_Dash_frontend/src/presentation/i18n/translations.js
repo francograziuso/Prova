@@ -156,6 +156,11 @@ export const TRANSLATIONS = {
     locationRegionUnknownStatus: "Regione non riconosciuta: uso standard UNI 11686",
     locationOutsideItalyStatus: "Fuori Italia: uso standard UNI 11686",
     locationUnavailableStatus: "Localizzazione non disponibile: uso standard UNI 11686",
+    manualLocationTitle: "Test localizzazione manuale",
+    manualLocationBody: "Scegli una regione per usare davvero l'app con quelle regole, senza richiedere il GPS.",
+    manualLocationApply: "APPLICA",
+    manualLocationStandard: "STANDARD",
+    manualLocationStatusPrefix: "Test manuale",
 
     binLabels: {
       carta: "Carta",
@@ -322,6 +327,11 @@ export const TRANSLATIONS = {
     locationRegionUnknownStatus: "Region not recognized: using UNI 11686 standard",
     locationOutsideItalyStatus: "Outside Italy: using UNI 11686 standard",
     locationUnavailableStatus: "Location unavailable: using UNI 11686 standard",
+    manualLocationTitle: "Manual location test",
+    manualLocationBody: "Choose a region to use the real app with those rules, without requesting GPS.",
+    manualLocationApply: "APPLY",
+    manualLocationStandard: "STANDARD",
+    manualLocationStatusPrefix: "Manual test",
 
     binLabels: {
       carta: "Paper",
