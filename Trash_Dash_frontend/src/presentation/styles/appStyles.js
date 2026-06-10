@@ -245,10 +245,14 @@ screenForegroundLayer: {
   position: "relative",
   overflow: "hidden",
 },
-  innerAuthLayout: {
+  keyboardAvoidingScreen: {
     flex: 1,
+  },
+  innerAuthLayout: {
+    flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingVertical: 24,
   },
  brandTitle: {
   fontSize: 52,
@@ -4760,6 +4764,11 @@ hugeMenuLogo: {
   // --------------------------
   // SCONTRO
   // --------------------------
+
+  battleKeyboardScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
 
   tdBattlePanel: {
     marginTop: 76,

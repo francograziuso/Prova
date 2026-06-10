@@ -19,7 +19,9 @@ import {
   Animated,
   BackHandler,
   Easing,
+  KeyboardAvoidingView,
   PanResponder,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -71,6 +73,7 @@ import { useActiveShopItem } from "./src/presentation/hooks/useActiveShopItem";
 import { styles } from "./src/presentation/styles/appStyles";
 
 const RUNNER_DRAGON_IMAGE = require("./assets/trashdash_runner_dragon.png");
+const KEYBOARD_AVOIDING_BEHAVIOR = Platform.OS === "ios" ? "padding" : "height";
 
 // ============================================================================
 // COMPATIBILITÀ AUDIO EXPO SDK 54
@@ -2040,8 +2043,17 @@ export default function App() {
 // 2. POI INSERIAMO I RIFERIMENTI E LE LOGICHE AUDIO
 const backgroundMusicRef = useRef(null);
 const previousScreenRef = useRef(screen);
+const authScrollRef = useRef(null);
+const battleSetupScrollRef = useRef(null);
  
 const [musicReadyTick, setMusicReadyTick] = useState(0);
+
+const scrollToEndAfterKeyboard = (scrollRef) => {
+  requestAnimationFrame(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+  });
+};
  
 const getMusicTargetVolume = () => {
   if (!music || MUSIC_DISABLED_SCREENS.includes(screen)) {
@@ -3672,6 +3684,7 @@ const handleGenerateLobby = async () => {
       body: { difficulty: battleDifficulty },
     });
     setLobbyCode(created.code);
+    setInputLobbyCode("");
     setBattleRole("host");
     setBattleLobby(created);
     setBattleResult(null);
@@ -3697,7 +3710,7 @@ const handleJoinLobby = async () => {
       token: authToken,
     });
     setLobbyCode(joined.code);
-    setInputLobbyCode(joined.code);
+    setInputLobbyCode("");
     setBattleRole("guest");
     setBattleLobby(joined);
     setActiveLobbyCode(joined.code);
@@ -3711,7 +3724,16 @@ const handleJoinLobby = async () => {
   function AuthScreen({ isRegister }) {
   return (
     <ScreenShell muted>
-      <View style={styles.innerAuthLayout}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingScreen}
+        behavior={KEYBOARD_AVOIDING_BEHAVIOR}
+      >
+      <ScrollView
+        ref={authScrollRef}
+        contentContainerStyle={styles.innerAuthLayout}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <Text allowFontScaling={false} style={styles.brandTitle}>
           TrashDash
         </Text>
@@ -3784,6 +3806,7 @@ const handleJoinLobby = async () => {
               importantForAutofill="no"
               textContentType={isRegister ? "newPassword" : "none"}
               returnKeyType="done"
+              onFocus={() => scrollToEndAfterKeyboard(authScrollRef)}
               editable
             />
           </View>
@@ -3831,7 +3854,8 @@ const handleJoinLobby = async () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenShell>
   );
 }
@@ -3912,6 +3936,7 @@ function LocationConsentPrompt() {
           {renderMenuButton(text.btnNewGame, () => setScreen("difficulty"))}
           {renderMenuButton(text.btnBattle, () => {
             setDifficulty((current) => normalizeBattleDifficulty(current));
+            setInputLobbyCode("");
             setScreen("battle");
           })}
           {renderMenuButton(text.btnLeaderboard, () => setScreen("leaderboard"))}
@@ -4807,9 +4832,12 @@ function EducationalReportPanel({ title, intro, errors = [] }) {
       <ScrollView
         style={styles.educationalReportScrollArea}
         contentContainerStyle={styles.educationalReportScrollContent}
+        alwaysBounceVertical={false}
+        bounces={false}
+        directionalLockEnabled
         nestedScrollEnabled
         showsVerticalScrollIndicator
-        overScrollMode="always"
+        overScrollMode="never"
       >
         {intro ? (
           <Text allowFontScaling={false} style={styles.cleanReportText}>
@@ -5156,9 +5184,22 @@ function ShopScreen() {
   return (
     <ScreenShell muted>
       <View pointerEvents="box-none" style={styles.headerBar}>
-        <GoBackButton onPress={() => setScreen("menu")} />
+        <GoBackButton onPress={() => {
+          setInputLobbyCode("");
+          setScreen("menu");
+        }} />
       </View>
  
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingScreen}
+        behavior={KEYBOARD_AVOIDING_BEHAVIOR}
+      >
+      <ScrollView
+        ref={battleSetupScrollRef}
+        contentContainerStyle={styles.battleKeyboardScrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <View style={[styles.centralPanel, styles.tdBattlePanel]}>
         <Text allowFontScaling={false} style={styles.panelTitleText}>
           {text.battle}
@@ -5220,12 +5261,15 @@ function ShopScreen() {
             autoCapitalize="characters"
             autoCorrect={false}
             returnKeyType="go"
+            onFocus={() => scrollToEndAfterKeyboard(battleSetupScrollRef)}
             onSubmitEditing={handleJoinLobby}
           />
  
           <FancyButton small label={text.enterLobby} onPress={handleJoinLobby} />
         </View>
       </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenShell>
   );
 }
@@ -5263,7 +5307,10 @@ function ShopScreen() {
   return (
     <ScreenShell muted>
       <View pointerEvents="box-none" style={styles.headerBar}>
-        <GoBackButton onPress={() => setScreen("menu")} />
+        <GoBackButton onPress={() => {
+          setInputLobbyCode("");
+          setScreen("menu");
+        }} />
       </View>
  
       <ScrollView
