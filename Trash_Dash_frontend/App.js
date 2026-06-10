@@ -1625,7 +1625,7 @@ function PlantRunner({ playCrashSfx, text }) {
     </TouchableOpacity>
   );
 }
-function TreeComponent({ errors, activeTree, language, performanceMode = false, feedback = null }) {
+function TreeComponent({ errors, activeTree, language, performanceMode = false, feedback = null, containerStyle = null }) {
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const isDead = errors >= 2;
@@ -1779,6 +1779,7 @@ function TreeComponent({ errors, activeTree, language, performanceMode = false, 
       style={[
         styles.treeCard,
         styles.cinTreeCard,
+        containerStyle,
         {
           backgroundColor: isDead ? activeTree.bgDead : activeTree.bgAlive || activeTree.bgHealthy,
           borderColor: isDead ? "#64748B" : activeTree.borderColor,
@@ -4010,6 +4011,7 @@ function LocationConsentPrompt() {
   language,
   playDragSfx,
 }) {
+        const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
         const pan = useRef(new Animated.ValueXY()).current;
         const dragScale = useRef(new Animated.Value(1)).current;
         const binRefs = useRef({});
@@ -4021,6 +4023,100 @@ function LocationConsentPrompt() {
         const playDragSfxRef = useRef(playDragSfx);
         const dragReleaseLockRef = useRef(false);
         const dragSafetyTimerRef = useRef(null);
+        const gameplayResponsiveStyles = useMemo(() => {
+          const compact = viewportHeight < 760 || viewportWidth < 380;
+          const tight = viewportHeight < 680 || viewportWidth < 340;
+          const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+          const headerMargin = Math.round(clamp(viewportWidth * 0.075, tight ? 16 : 20, 30));
+          const pauseMinWidth = tight ? 70 : compact ? 78 : 86;
+          const headerGap = tight ? 6 : compact ? 8 : 14;
+
+          return {
+            gameStatsHeader: {
+              marginTop: tight ? 0 : compact ? 2 : 4,
+              marginHorizontal: headerMargin,
+              marginBottom: tight ? 4 : 6,
+              minHeight: tight ? 40 : compact ? 42 : 44,
+              columnGap: headerGap,
+            },
+            pauseTriggerBtn: {
+              minWidth: pauseMinWidth,
+              paddingHorizontal: tight ? 9 : compact ? 10 : 13,
+              paddingVertical: tight ? 7 : 8,
+            },
+            pauseTriggerText: {
+              fontSize: tight ? 13 : compact ? 14 : 15,
+            },
+            gameStatsRightGroup: {
+              gap: tight ? 4 : compact ? 6 : 8,
+              rowGap: 2,
+              minWidth: 0,
+              maxWidth: Math.max(156, viewportWidth - headerMargin * 2 - pauseMinWidth - headerGap),
+              flexWrap: viewportWidth < 350 ? "wrap" : "nowrap",
+            },
+            gameStatsLabelText: {
+              fontSize: tight ? 11 : compact ? 12 : 13,
+              lineHeight: tight ? 14 : compact ? 15 : 16,
+              flexShrink: 1,
+            },
+            gameplayScrollContainer: {
+              paddingTop: tight ? 8 : compact ? 12 : 16,
+              paddingHorizontal: tight ? 12 : compact ? 14 : 16,
+              paddingBottom: tight ? 44 : compact ? 40 : 34,
+            },
+            treeCard: {
+              minHeight: tight ? 104 : compact ? 112 : 120,
+              marginBottom: tight ? 6 : compact ? 8 : 10,
+              padding: compact ? 10 : 12,
+            },
+            draggableAreaContainer: {
+              height: tight ? 104 : compact ? 114 : 126,
+              marginBottom: tight ? 6 : compact ? 8 : 10,
+            },
+            interactiveWasteCard: {
+              width: tight ? "78%" : compact ? "75%" : "72%",
+              minHeight: tight ? 98 : compact ? 106 : 112,
+              paddingVertical: tight ? 9 : compact ? 10 : 12,
+            },
+            wasteMeasureBox: {
+              minHeight: tight ? 62 : compact ? 68 : 76,
+            },
+            wasteDragHandle: {
+              minHeight: tight ? 62 : compact ? 68 : 76,
+            },
+            wasteLargeIcon: {
+              fontSize: tight ? 40 : compact ? 44 : 48,
+              padding: tight ? 7 : compact ? 8 : 10,
+            },
+            wasteNameTitle: {
+              fontSize: tight ? 16 : compact ? 18 : 19,
+              lineHeight: tight ? 20 : compact ? 22 : 23,
+            },
+            interactiveBinItem: {
+              marginBottom: tight ? 8 : compact ? 10 : 12,
+            },
+            binFullTouch: {
+              minHeight: tight ? 68 : compact ? 76 : 84,
+              paddingVertical: tight ? 11 : compact ? 14 : 18,
+              paddingHorizontal: tight ? 6 : 8,
+            },
+            binLabelOnlyText: {
+              fontSize: tight ? 16 : compact ? 18 : 21,
+              lineHeight: tight ? 20 : compact ? 22 : 26,
+              letterSpacing: tight ? 0.2 : 0.5,
+            },
+            gameplayInstructionBox: {
+              marginTop: tight ? 4 : 8,
+              marginBottom: tight ? 16 : compact ? 14 : 10,
+              paddingVertical: tight ? 10 : 12,
+              paddingHorizontal: tight ? 10 : 14,
+            },
+            gameplayInstructionText: {
+              fontSize: tight ? 12 : compact ? 13 : 14,
+              lineHeight: tight ? 17 : compact ? 19 : 20,
+            },
+          };
+        }, [viewportHeight, viewportWidth]);
 playDragSfxRef.current = playDragSfx;
 
         useEffect(() => {
@@ -4429,34 +4525,53 @@ onPanResponderTerminate: (event, gestureState) => {
  
         return (
          <ScreenShell muted disableLeaves performanceMode>
-            <View style={styles.gameStatsHeader}>
+            <View style={[styles.gameStatsHeader, gameplayResponsiveStyles.gameStatsHeader]}>
              <TouchableOpacity
-  style={styles.pauseTriggerBtn}
+  style={[styles.pauseTriggerBtn, gameplayResponsiveStyles.pauseTriggerBtn]}
   onPress={withButtonSfx(() => setPaused(true))}
 >
-                <Text allowFontScaling={false} style={styles.pauseTriggerText}>
+                <Text allowFontScaling={false} style={[styles.pauseTriggerText, gameplayResponsiveStyles.pauseTriggerText]}>
                  {text.pause}
                 </Text>
               </TouchableOpacity>
  
-              <View style={styles.gameStatsRightGroup}>
-                <Text allowFontScaling={false} style={styles.gameStatsLabelText}>
+              <View style={[styles.gameStatsRightGroup, gameplayResponsiveStyles.gameStatsRightGroup]}>
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                  allowFontScaling={false}
+                  style={[styles.gameStatsLabelText, gameplayResponsiveStyles.gameStatsLabelText]}
+                >
                   {text.lives}: {"❤️".repeat(lives)}
                 </Text>
-                <Text allowFontScaling={false} style={styles.gameStatsLabelText}>
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                  allowFontScaling={false}
+                  style={[styles.gameStatsLabelText, gameplayResponsiveStyles.gameStatsLabelText]}
+                >
                   {text.points}: <Text allowFontScaling={false} style={styles.boldYellow}>{points}</Text>
                 </Text>
-                <Text allowFontScaling={false} style={styles.gameStatsLabelText}>
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                  allowFontScaling={false}
+                  style={[styles.gameStatsLabelText, gameplayResponsiveStyles.gameStatsLabelText]}
+                >
                   {text.time}: {time}s
                 </Text>
               </View>
             </View>
  
             <ScrollView
+              style={styles.gameplayScrollView}
               scrollEnabled={!isDragging}
               keyboardShouldPersistTaps="always"
               removeClippedSubviews={false}
-              contentContainerStyle={styles.gameplayScrollContainer}
+              contentContainerStyle={[styles.gameplayScrollContainer, gameplayResponsiveStyles.gameplayScrollContainer]}
             >
             <TreeComponent
               errors={gameErrors.length}
@@ -4464,16 +4579,18 @@ onPanResponderTerminate: (event, gestureState) => {
               language={language}
               performanceMode
               feedback={treeFeedback}
+              containerStyle={gameplayResponsiveStyles.treeCard}
             />
  
-              <View style={styles.draggableAreaContainer}>
-                <View style={styles.interactiveWasteCard} {...panResponder.panHandlers}>
-                  <View ref={wasteMeasureRef} collapsable={false} style={styles.wasteMeasureBox}>
+              <View style={[styles.draggableAreaContainer, gameplayResponsiveStyles.draggableAreaContainer]}>
+                <View style={[styles.interactiveWasteCard, gameplayResponsiveStyles.interactiveWasteCard]} {...panResponder.panHandlers}>
+                  <View ref={wasteMeasureRef} collapsable={false} style={[styles.wasteMeasureBox, gameplayResponsiveStyles.wasteMeasureBox]}>
                     <Animated.View
                       renderToHardwareTextureAndroid
                       shouldRasterizeIOS
                       style={[
                         styles.wasteDragHandle,
+                        gameplayResponsiveStyles.wasteDragHandle,
                         {
                           transform: [
                             { translateX: pan.x },
@@ -4484,7 +4601,7 @@ onPanResponderTerminate: (event, gestureState) => {
                         isDragging && styles.wasteDragHandleActive,
                       ]}
                     >
-                      <Text allowFontScaling={false} style={styles.wasteLargeIcon}>
+                      <Text allowFontScaling={false} style={[styles.wasteLargeIcon, gameplayResponsiveStyles.wasteLargeIcon]}>
                         {currentWaste?.icon}
                       </Text>
                     </Animated.View>
@@ -4495,7 +4612,7 @@ onPanResponderTerminate: (event, gestureState) => {
                     adjustsFontSizeToFit
                     minimumFontScale={0.72}
                     allowFontScaling={false}
-                    style={styles.wasteNameTitle}
+                    style={[styles.wasteNameTitle, gameplayResponsiveStyles.wasteNameTitle]}
                   >
                     {getWasteName(currentWaste, language)}
                   </Text>
@@ -4518,13 +4635,14 @@ onPanResponderTerminate: (event, gestureState) => {
                         borderColor: isDragging ? "#FFFFFF" : bin.color,
                         borderWidth: 3,
                       },
+                      gameplayResponsiveStyles.interactiveBinItem,
                       isDragging && styles.interactiveBinItemDropReady,
                     ]}
                   >
-                    <View style={styles.binFullTouch}>
+                    <View style={[styles.binFullTouch, gameplayResponsiveStyles.binFullTouch]}>
                       <Text
                         allowFontScaling={false}
-                        style={[styles.binLabelOnlyText, { color: "#FFFFFF" }]}
+                        style={[styles.binLabelOnlyText, gameplayResponsiveStyles.binLabelOnlyText, { color: "#FFFFFF" }]}
                       >
                        {getBinDisplayLabel(bin, language, text)}
                       </Text>
@@ -4533,8 +4651,8 @@ onPanResponderTerminate: (event, gestureState) => {
                 ))}
               </View>
  
-              <View style={styles.gameplayInstructionBox}>
-                <Text allowFontScaling={false} style={styles.gameplayInstructionText}>
+              <View style={[styles.gameplayInstructionBox, gameplayResponsiveStyles.gameplayInstructionBox]}>
+                <Text allowFontScaling={false} style={[styles.gameplayInstructionText, gameplayResponsiveStyles.gameplayInstructionText]}>
                   {text.gameplayInstruction}
                 </Text>
               </View>

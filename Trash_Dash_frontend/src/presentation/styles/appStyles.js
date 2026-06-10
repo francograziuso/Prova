@@ -591,8 +591,11 @@ hugeMenuLogo: {
   boldYellow: {
     color: "#F59E0B",
   },
-  gameplayScrollContainer: {
+  gameplayScrollView: {
     flex: 1,
+  },
+  gameplayScrollContainer: {
+    flexGrow: 1,
     padding: 16,
     paddingBottom: 28,
   },
