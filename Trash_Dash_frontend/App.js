@@ -2016,6 +2016,7 @@ export default function App() {
   const [lobbyCode, setLobbyCode] = useState("");
   const [lobbyStatus, setLobbyStatus] = useState("");
   const [inputLobbyCode, setInputLobbyCode] = useState("");
+  const [lobbySyncing, setLobbySyncing] = useState(false);
   const [gameMode, setGameMode] = useState("SINGLE");
   const [activeLobbyCode, setActiveLobbyCode] = useState("");
   const [battleRole, setBattleRole] = useState(null);
@@ -2050,6 +2051,7 @@ const authEmailInputRef = useRef(null);
 const authPasswordInputRef = useRef(null);
 const battleSetupScrollRef = useRef(null);
 const lobbyCodeInputRef = useRef(null);
+const lobbySyncingRef = useRef(false);
  
 const [musicReadyTick, setMusicReadyTick] = useState(0);
 
@@ -2579,6 +2581,10 @@ const getDisplayUsername = (user = currentUser) => {
 
 const localizeMessage = (message, fallback) => {
   const normalized = String(message || "").trim();
+  if (/network request failed|failed to fetch|backend non raggiungibile|load failed|networkerror/i.test(normalized)) {
+    return language === "English" ? "Backend unavailable" : "Backend non raggiungibile";
+  }
+
   const messageMap = {
     "Credenziali non valide": text.authInvalidCredentials,
     "Email o username già registrati": text.authEmailUsernameTaken,
@@ -3674,6 +3680,8 @@ const handleWasteSorting = (selectedBinId) => {
 };
  
 const handleGenerateLobby = async () => {
+  if (lobbySyncingRef.current) return;
+
   if (!authToken || currentUser?.isGuest) {
     setLobbyStatus(text.loginRequiredCreate);
     return;
@@ -3681,6 +3689,10 @@ const handleGenerateLobby = async () => {
 
   const battleDifficulty = normalizeBattleDifficulty(difficulty);
   if (battleDifficulty !== difficulty) setDifficulty(battleDifficulty);
+
+  lobbySyncingRef.current = true;
+  setLobbySyncing(true);
+  setLobbyStatus(text.loading);
 
   try {
     const created = await apiRequest("/lobbies", {
@@ -3697,10 +3709,15 @@ const handleGenerateLobby = async () => {
     setLobbyStatus(text.waitingOpponent);
   } catch (error) {
     setLobbyStatus(localizeMessage(error.message, text.lobbyCreateFailed));
+  } finally {
+    lobbySyncingRef.current = false;
+    setLobbySyncing(false);
   }
 };
  
 const handleJoinLobby = async () => {
+  if (lobbySyncingRef.current) return;
+
   if (!authToken || currentUser?.isGuest) {
     setLobbyStatus(text.loginRequiredJoin);
     return;
@@ -3708,6 +3725,10 @@ const handleJoinLobby = async () => {
 
   const code = normalizeLobbyCode(inputLobbyCode);
   if (!code) return;
+
+  lobbySyncingRef.current = true;
+  setLobbySyncing(true);
+  setLobbyStatus(text.loading);
 
   try {
     const joined = await apiRequest(`/lobbies/${code}/join`, {
@@ -3723,6 +3744,9 @@ const handleJoinLobby = async () => {
     await startBattleMatch(joined, "guest");
   } catch (error) {
     setLobbyStatus(localizeMessage(error.message, text.lobbyJoinFailed));
+  } finally {
+    lobbySyncingRef.current = false;
+    setLobbySyncing(false);
   }
 };
  
@@ -5364,7 +5388,12 @@ function ShopScreen() {
             {text.createChallenge}
           </Text>
  
-          <FancyButton small label={text.generateLobbyCode} onPress={handleGenerateLobby} />
+          <FancyButton
+            small
+            label={text.generateLobbyCode}
+            onPress={handleGenerateLobby}
+            disabled={lobbySyncing}
+          />
  
           <Text selectable allowFontScaling={false} style={styles.lobbyCodeGeneratedDisplay}>
             {text.roomCode}:{" "}
@@ -5399,9 +5428,15 @@ function ShopScreen() {
             returnKeyType="go"
             onFocus={() => scrollToEndAfterKeyboard(battleSetupScrollRef)}
             onSubmitEditing={handleJoinLobby}
+            editable={!lobbySyncing}
           />
  
-          <FancyButton small label={text.enterLobby} onPress={handleJoinLobby} />
+          <FancyButton
+            small
+            label={text.enterLobby}
+            onPress={handleJoinLobby}
+            disabled={lobbySyncing}
+          />
         </View>
       </View>
       </ScrollView>
