@@ -2045,7 +2045,11 @@ export default function App() {
 const backgroundMusicRef = useRef(null);
 const previousScreenRef = useRef(screen);
 const authScrollRef = useRef(null);
+const authUsernameInputRef = useRef(null);
+const authEmailInputRef = useRef(null);
+const authPasswordInputRef = useRef(null);
 const battleSetupScrollRef = useRef(null);
+const lobbyCodeInputRef = useRef(null);
  
 const [musicReadyTick, setMusicReadyTick] = useState(0);
 
@@ -3732,6 +3736,7 @@ const handleJoinLobby = async () => {
       <ScrollView
         ref={authScrollRef}
         contentContainerStyle={styles.innerAuthLayout}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -3754,6 +3759,7 @@ const handleJoinLobby = async () => {
                 {text.username}
               </Text>
               <TextInput
+                ref={authUsernameInputRef}
                 style={styles.inputFieldMock}
                 placeholder={text.usernamePlaceholder}
                 placeholderTextColor="#999"
@@ -3764,6 +3770,9 @@ const handleJoinLobby = async () => {
                 autoComplete="off"
                 importantForAutofill="no"
                 returnKeyType="next"
+                blurOnSubmit={false}
+                onFocus={() => scrollToEndAfterKeyboard(authScrollRef)}
+                onSubmitEditing={() => authEmailInputRef.current?.focus()}
                 editable
               />
             </View>
@@ -3774,6 +3783,7 @@ const handleJoinLobby = async () => {
               {text.email}
             </Text>
             <TextInput
+              ref={authEmailInputRef}
               style={styles.inputFieldMock}
               placeholder={text.emailPlaceholder}
               placeholderTextColor="#999"
@@ -3786,6 +3796,9 @@ const handleJoinLobby = async () => {
               importantForAutofill="no"
               textContentType="none"
               returnKeyType="next"
+              blurOnSubmit={false}
+              onFocus={() => scrollToEndAfterKeyboard(authScrollRef)}
+              onSubmitEditing={() => authPasswordInputRef.current?.focus()}
               editable
             />
           </View>
@@ -3795,6 +3808,7 @@ const handleJoinLobby = async () => {
               {text.password}
             </Text>
             <TextInput
+              ref={authPasswordInputRef}
               style={styles.inputFieldMock}
               secureTextEntry
               placeholder={text.passwordPlaceholder}
@@ -3808,6 +3822,7 @@ const handleJoinLobby = async () => {
               textContentType={isRegister ? "newPassword" : "none"}
               returnKeyType="done"
               onFocus={() => scrollToEndAfterKeyboard(authScrollRef)}
+              onSubmitEditing={() => handleAuthSubmit(isRegister)}
               editable
             />
           </View>
@@ -4025,95 +4040,96 @@ function LocationConsentPrompt() {
         const dragSafetyTimerRef = useRef(null);
         const gameplayResponsiveStyles = useMemo(() => {
           const compact = viewportHeight < 760 || viewportWidth < 380;
-          const tight = viewportHeight < 680 || viewportWidth < 340;
+          const veryCompact = viewportHeight < 620 || viewportWidth < 330;
           const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-          const headerMargin = Math.round(clamp(viewportWidth * 0.075, tight ? 16 : 20, 30));
-          const pauseMinWidth = tight ? 70 : compact ? 78 : 86;
-          const headerGap = tight ? 6 : compact ? 8 : 14;
+          const headerMargin = Math.round(clamp(viewportWidth * 0.075, veryCompact ? 16 : 20, 30));
+          const pauseMinWidth = veryCompact ? 76 : compact ? 82 : 86;
+          const headerGap = veryCompact ? 8 : compact ? 10 : 14;
 
           return {
             gameStatsHeader: {
-              marginTop: tight ? 0 : compact ? 2 : 4,
+              marginTop: veryCompact ? 0 : compact ? 2 : 4,
               marginHorizontal: headerMargin,
-              marginBottom: tight ? 4 : 6,
-              minHeight: tight ? 40 : compact ? 42 : 44,
+              marginBottom: veryCompact ? 4 : 6,
+              minHeight: veryCompact ? 42 : 44,
+              gap: headerGap,
               columnGap: headerGap,
             },
             pauseTriggerBtn: {
               minWidth: pauseMinWidth,
-              paddingHorizontal: tight ? 9 : compact ? 10 : 13,
-              paddingVertical: tight ? 7 : 8,
+              paddingHorizontal: veryCompact ? 10 : compact ? 12 : 13,
+              paddingVertical: 8,
             },
             pauseTriggerText: {
-              fontSize: tight ? 13 : compact ? 14 : 15,
+              fontSize: veryCompact ? 14 : 15,
             },
             gameStatsRightGroup: {
-              gap: tight ? 4 : compact ? 6 : 8,
+              gap: veryCompact ? 6 : compact ? 7 : 8,
               rowGap: 2,
               minWidth: 0,
               maxWidth: Math.max(156, viewportWidth - headerMargin * 2 - pauseMinWidth - headerGap),
-              flexWrap: viewportWidth < 350 ? "wrap" : "nowrap",
+              flexWrap: viewportWidth < 330 ? "wrap" : "nowrap",
             },
             gameStatsLabelText: {
-              fontSize: tight ? 11 : compact ? 12 : 13,
-              lineHeight: tight ? 14 : compact ? 15 : 16,
+              fontSize: compact ? 12 : 13,
+              lineHeight: compact ? 15 : 16,
               flexShrink: 1,
             },
             gameplayScrollContainer: {
-              paddingTop: tight ? 8 : compact ? 12 : 16,
-              paddingHorizontal: tight ? 12 : compact ? 14 : 16,
-              paddingBottom: tight ? 44 : compact ? 40 : 34,
+              paddingTop: veryCompact ? 10 : compact ? 12 : 16,
+              paddingHorizontal: veryCompact ? 12 : compact ? 14 : 16,
+              paddingBottom: veryCompact ? 48 : compact ? 42 : 34,
             },
             treeCard: {
-              minHeight: tight ? 104 : compact ? 112 : 120,
-              marginBottom: tight ? 6 : compact ? 8 : 10,
+              minHeight: veryCompact ? 108 : compact ? 116 : 120,
+              marginBottom: veryCompact ? 8 : compact ? 9 : 10,
               padding: compact ? 10 : 12,
             },
             draggableAreaContainer: {
-              height: tight ? 104 : compact ? 114 : 126,
-              marginBottom: tight ? 6 : compact ? 8 : 10,
+              height: veryCompact ? 108 : compact ? 118 : 126,
+              marginBottom: veryCompact ? 8 : compact ? 9 : 10,
             },
             interactiveWasteCard: {
-              width: tight ? "78%" : compact ? "75%" : "72%",
-              minHeight: tight ? 98 : compact ? 106 : 112,
-              paddingVertical: tight ? 9 : compact ? 10 : 12,
+              width: veryCompact ? "76%" : compact ? "74%" : "72%",
+              minHeight: veryCompact ? 102 : compact ? 108 : 112,
+              paddingVertical: veryCompact ? 10 : compact ? 11 : 12,
             },
             wasteMeasureBox: {
-              minHeight: tight ? 62 : compact ? 68 : 76,
+              minHeight: veryCompact ? 66 : compact ? 72 : 76,
             },
             wasteDragHandle: {
-              minHeight: tight ? 62 : compact ? 68 : 76,
+              minHeight: veryCompact ? 66 : compact ? 72 : 76,
             },
             wasteLargeIcon: {
-              fontSize: tight ? 40 : compact ? 44 : 48,
-              padding: tight ? 7 : compact ? 8 : 10,
+              fontSize: veryCompact ? 42 : compact ? 46 : 48,
+              padding: veryCompact ? 8 : compact ? 9 : 10,
             },
             wasteNameTitle: {
-              fontSize: tight ? 16 : compact ? 18 : 19,
-              lineHeight: tight ? 20 : compact ? 22 : 23,
+              fontSize: veryCompact ? 17 : compact ? 18 : 19,
+              lineHeight: veryCompact ? 21 : compact ? 22 : 23,
             },
             interactiveBinItem: {
-              marginBottom: tight ? 8 : compact ? 10 : 12,
+              marginBottom: veryCompact ? 8 : compact ? 10 : 12,
             },
             binFullTouch: {
-              minHeight: tight ? 68 : compact ? 76 : 84,
-              paddingVertical: tight ? 11 : compact ? 14 : 18,
-              paddingHorizontal: tight ? 6 : 8,
+              minHeight: veryCompact ? 72 : compact ? 80 : 84,
+              paddingVertical: veryCompact ? 12 : compact ? 15 : 18,
+              paddingHorizontal: veryCompact ? 7 : 8,
             },
             binLabelOnlyText: {
-              fontSize: tight ? 16 : compact ? 18 : 21,
-              lineHeight: tight ? 20 : compact ? 22 : 26,
-              letterSpacing: tight ? 0.2 : 0.5,
+              fontSize: veryCompact ? 17 : compact ? 19 : 21,
+              lineHeight: veryCompact ? 21 : compact ? 23 : 26,
+              letterSpacing: veryCompact ? 0.2 : 0.5,
             },
             gameplayInstructionBox: {
-              marginTop: tight ? 4 : 8,
-              marginBottom: tight ? 16 : compact ? 14 : 10,
-              paddingVertical: tight ? 10 : 12,
-              paddingHorizontal: tight ? 10 : 14,
+              marginTop: compact ? 6 : 8,
+              marginBottom: veryCompact ? 18 : compact ? 14 : 10,
+              paddingVertical: veryCompact ? 10 : 12,
+              paddingHorizontal: veryCompact ? 12 : 14,
             },
             gameplayInstructionText: {
-              fontSize: tight ? 12 : compact ? 13 : 14,
-              lineHeight: tight ? 17 : compact ? 19 : 20,
+              fontSize: veryCompact ? 12 : compact ? 13 : 14,
+              lineHeight: veryCompact ? 18 : compact ? 19 : 20,
             },
           };
         }, [viewportHeight, viewportWidth]);
@@ -5315,6 +5331,7 @@ function ShopScreen() {
       <ScrollView
         ref={battleSetupScrollRef}
         contentContainerStyle={styles.battleKeyboardScrollContent}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -5371,6 +5388,7 @@ function ShopScreen() {
           </Text>
  
           <TextInput
+            ref={lobbyCodeInputRef}
             style={styles.lobbyCodeInputField}
             placeholder={text.lobbyPlaceholder}
             placeholderTextColor="#999"
